@@ -6,6 +6,7 @@ import PageLayout from './components/layout/PageLayout';
 import About from './components/Pages/About';
 import Register from './components/Pages/Register';
 import Login from './components/Pages/Login';
+import ResourcePage from './components/Pages/ResoucePage';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -21,6 +22,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="events" element={<Events />} />
           <Route path="about" element={<About />} />
+          <Route path="resources" element={<ResourcePage />} />
         </Route>
 
         {/* You can enable a NotFound route here */}

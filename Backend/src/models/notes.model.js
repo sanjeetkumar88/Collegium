@@ -26,7 +26,7 @@ const noteSchema = new Schema(
       required: true,
     },
     tags: {
-      type: [String], // Tags associated with the note (e.g., "Math", "Physics", etc.)
+      type: String, // Tags associated with the note (e.g., "Math", "Physics", etc.)
       default: [],
     },
     isPublic: {

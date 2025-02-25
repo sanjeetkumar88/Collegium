@@ -20,10 +20,13 @@ app.use(cookieParser())
 
 import userRouter from './routes/user.routes.js'
 
+import notesRouter from './routes/notes.routes.js'
+
 
 // routes declaration
 
 app.use('/users',userRouter) 
+app.use('/notes',notesRouter) 
 
 
 
