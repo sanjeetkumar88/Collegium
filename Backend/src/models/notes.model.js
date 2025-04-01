@@ -12,37 +12,66 @@ const noteSchema = new Schema(
       trim: true,
     },
     type: {
-      type: String, // e.g., "short note", "PYQ", "lecture", etc.
-      enum: ["short note", "PYQ", "lecture", "question bank", "quantum", "notes"], // Add any types you want to support
+      type: String,
+      enum: ["short-note", "pyq", "lecture", "question-bank", "quantum", "notes"],
       required: true,
     },
     fileUrl: {
-      type: String, // URL of the file (e.g., cloud storage URL like Cloudinary)
+      type: String,
       required: true,
     },
-    user: {
+    author: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model (author of the note)
+      ref: "User",
       required: true,
     },
-    tags: {
-      type: String, // Tags associated with the note (e.g., "Math", "Physics", etc.)
-      default: [],
+    subject: {
+      type: String,
+      required: true,
     },
     isPublic: {
       type: Boolean,
-      default: true, // Whether the note is publicly accessible or only to the user
+      default: true,
     },
     is_deleted: {
       type: Boolean,
-      default: false, // Whether the note
-    }
+      default: false,
+    },
+    thumbnail: {
+      type: String,
+      default: "",
+    },
+    branch: {
+      type: String,
+      enum: [
+        "Computer Science",
+        "Mechanical",
+        "Electrical",
+        "Civil",
+        "Electronics",
+        "Biotechnology",
+        "IT",
+        "Chemical",
+        "Other",
+      ],
+      default: "Other",
+    },
   },
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt fields
+    timestamps: true,
   }
 );
 
-// Optional: Instance methods for additional logic if needed, like fetching notes by specific tags
+// 🔹 Indexes for optimized searching
+noteSchema.index({ title: "text", tags: "text", branch: "text" });
+
+// 🔹 Pre-save hook to format titles properly
+noteSchema.pre("save", function (next) {
+  this.title = this.title
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+  next();
+});
 
 export const Note = mongoose.model("Note", noteSchema);

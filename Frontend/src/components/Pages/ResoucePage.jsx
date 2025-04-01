@@ -1,32 +1,45 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
+import { Card, Image, Text, Badge, Button, Group, Select, Pagination } from "@mantine/core";
 
 const ResourcePage = () => {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Extract query parameters from URL
-  const tags = searchParams.get("tags") || "";
-  const page = searchParams.get("page") || 1;
-  const userId = searchParams.get("userId") || ""; // Only for private notes
+  // Derive page directly from searchParams
+  const page = parseInt(searchParams.get("page") || 1);
+
+  // Filters
+  const type = searchParams.get("type") || "";
+  const [subject, setSubject] = useState("");
+  const [title, setTitle] = useState("");
+  const [branch, setBranch] = useState("");
+  const [userId, setUserId] = useState("");
+  const [limit, setLimit] = useState(10);
 
   useEffect(() => {
     const fetchNotes = async () => {
       try {
         setLoading(true);
+
         const query = new URLSearchParams({
-          tags,
-          page,
-          ...(userId && { userId, isPublic: "false" }) // Only include userId & isPublic if userId exists
+          type,
+          ...(subject && { subject }),
+          ...(title && { title }),
+          ...(branch && { branch }),
+          page, // Directly controlled by searchParams
+          ...(userId && { userId, isPublic: "false" }),
+          ...(limit && {limit}),
         }).toString();
 
-        const response = await axios.get(
-          `notes/getnotes?${query}`
-        );
+        console.log("Fetching notes with query:", query);
 
+        const response = await axios.get(`notes/getnotes?${query}`);
         setNotes(response.data.data.notes);
+        setTotalPages(response.data.data.totalPages);
       } catch (error) {
         console.error("Error fetching notes:", error);
       } finally {
@@ -35,61 +48,100 @@ const ResourcePage = () => {
     };
 
     fetchNotes();
-  }, [tags, page, userId]);
+  }, [type, subject, title, branch, page, userId,limit]);
 
-  const handleFilterChange = (filterType, value) => {
-    const newParams = new URLSearchParams(searchParams);
-    if (value) {
-      newParams.set(filterType, value);
-    } else {
-      newParams.delete(filterType);
-    }
-    setSearchParams(newParams);
+  // Handle page change and update searchParams directly (no extra state)
+  const handlePageChange = (newPage) => {
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set("page", newPage); // Sync page in the URL
+      return newParams;
+    });
   };
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-semibold text-gray-800 mb-4">Notes</h1>
+      <h1 className="text-3xl font-semibold text-gray-800 mb-6">Notes</h1>
 
-      {/* Filters */}
-      <div className="flex gap-4 mb-6">
+      {/* Filter Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <input
           type="text"
-          className="p-2 border rounded"
-          placeholder="Tags (comma-separated)"
-          value={tags}
-          onChange={(e) => handleFilterChange("tags", e.target.value)}
+          className="p-2 border rounded-lg"
+          placeholder="Search by Subject..."
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+        />
+
+        <input
+          type="text"
+          className="p-2 border rounded-lg"
+          placeholder="Search by Title..."
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+
+        <Select
+          placeholder="Select Branch"
+          data={[
+            "Computer Science",
+            "Mechanical",
+            "Electrical",
+            "Civil",
+            "Electronics",
+            "Biotechnology",
+            "IT",
+            "Chemical",
+            "Other",
+          ]}
+          value={branch}
+          onChange={setBranch}
         />
       </div>
 
-      {/* Notes List */}
       {loading ? (
         <p>Loading notes...</p>
       ) : notes.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {notes.map((note) => (
-            <div
-              key={note._id}
-              className="p-4 border rounded shadow-md hover:shadow-lg transition"
-            >
-              <h2 className="text-xl font-semibold text-gray-800">{note.title}</h2>
-              <p className="text-gray-600">{note.description}</p>
-              <p className="text-sm text-gray-500">
-                Tags: {note.tags?.join(", ") || "None"}
-              </p>
-              {note.fileUrl && (
-                <a
-                  href={note.fileUrl}
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {notes.map((note) => (
+              <Card key={note._id} shadow="sm" padding="lg" radius="md" withBorder>
+                <Card.Section>
+                  <Image src={note.thumbnail} height={160} alt={note.title} />
+                </Card.Section>
+
+                <Group justify="space-between" mt="md" mb="xs">
+                  <Text fw={500}>{note.title}</Text>
+                  <Badge color="pink">{note.subject}</Badge>
+                </Group>
+
+                <Text size="sm" c="dimmed">
+                  {note.description}
+                </Text>
+
+                <Button
+                  color="blue"
+                  fullWidth
+                  mt="md"
+                  radius="md"
+                  component="a"
+                  href={note.fileUrl ? note.fileUrl : "#"}
+                  download={note.fileUrl ? `Note-${note.title}.pdf` : undefined}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-indigo-600 mt-2 block"
+                  disabled={!note.fileUrl}
                 >
-                  View File
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
+                  {note.fileUrl ? "Download Note" : "No File Available"}
+                </Button>
+              </Card>
+            ))}
+          </div>
+
+          {/* Pagination Component */}
+          <div className="flex justify-center mt-6">
+            <Pagination total={totalPages} value={page} onChange={handlePageChange} />
+          </div>
+        </>
       ) : (
         <p>No notes found.</p>
       )}

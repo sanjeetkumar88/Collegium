@@ -22,11 +22,14 @@ import userRouter from './routes/user.routes.js'
 
 import notesRouter from './routes/notes.routes.js'
 
+import clubrouter from './routes/club.routes.js'
+
 
 // routes declaration
 
 app.use('/users',userRouter) 
 app.use('/notes',notesRouter) 
+app.use('/club',clubrouter)
 
 
 

@@ -10,10 +10,10 @@ import fs from "fs"
 
 const uploadnotes = asyncHandler(async(req,res) => {
     try {
-        const { title, description, type, tags, isPublic } = req.body;
+        const { title, description, type, subject, isPublic } = req.body;
         const userId = req.user.id;
 
-        if([title, description, type, tags, isPublic].some((field)=> field?.trim() === "")){
+        if([title, description, type, subject, isPublic].some((field)=> field?.trim() === "")){
             throw new ApiError(400,"All field are require")
         }
         const NotesLocalPath = req.files?.notes[0]?.path;
@@ -24,17 +24,18 @@ const uploadnotes = asyncHandler(async(req,res) => {
             throw new ApiError(400,"Notes is required in localpath")
         }
 
-        const uploadedNotes = await uploadOnCloudinary(NotesLocalPath)
+        const uploadedNotes = await uploadOnCloudinary(NotesLocalPath, "raw")
 
         if(!uploadedNotes){
             throw new ApiError(400,"Notes is required")
         }
+        // const fileUrl = .replace("/upload/", "/upload/fl_attachment/");
         const newNotes = await Note.create({
             title,
             description,
             type,
-            tags,
-            fileUrl: uploadedNotes.url, // Save the Cloudinary URL
+            subject,
+            fileUrl:uploadedNotes.secure_url, // Save the Cloudinary URL
             user: userId,
             isPublic: isPublic !== undefined ? isPublic : true,
         });
@@ -63,29 +64,33 @@ const uploadnotes = asyncHandler(async(req,res) => {
 
 const getNotes = asyncHandler(async (req, res) => {
     try {
-        const { type, userId, tags, isPublic, page = 1, limit = 10 } = req.query;
+        const { type, userId, subject, isPublic, page, limit, title } = req.query;
 
         const filters = {};
 
-        // If userId is provided, take isPublic from query; otherwise, default to public notes
+        // User-based filtering
         if (userId) {
             if (isPublic !== undefined) {
-                filters.isPublic = isPublic === "true"; // Convert string to boolean
+                filters.isPublic = isPublic === "true";
             }
-            filters.user = userId; // Filter by specific user
+            filters.user = userId;
         } else {
-            filters.isPublic = true; // Only fetch public notes if no userId is provided
+            filters.isPublic = true;
         }
 
-        // Filter by note type
+        // Exact match for type
         if (type) {
             filters.type = type;
         }
 
-        // Filter by tags (comma-separated)
-        if (tags) {
-            const tagsArray = tags.split(",").map(tag => tag.trim());
-            filters.tags = { $in: tagsArray };
+        // ✅ Partial match for subject
+        if (subject) {
+            filters.subject = { $regex: subject, $options: "i" };
+        }
+
+        // ✅ Partial match for title
+        if (title) {
+            filters.title = { $regex: title, $options: "i" };
         }
 
         // Pagination settings
@@ -93,19 +98,15 @@ const getNotes = asyncHandler(async (req, res) => {
         const pageSize = parseInt(limit, 10);
         const skip = (pageNumber - 1) * pageSize;
 
-        // Fetch notes with filters, pagination, and sorting
+        // Fetch filtered notes
         const notes = await Note.find(filters)
-            .sort({ createdAt: -1 }) // Sort by newest notes first
+            .sort({ createdAt: -1 })
             .skip(skip)
             .limit(pageSize)
-            .select("-is_deleted"); // Exclude deleted field
+            .select("-is_deleted");
 
-        // Get total notes count for pagination info
+        // Count total notes matching criteria
         const totalNotes = await Note.countDocuments(filters);
-
-        if (!notes.length) {
-            throw new ApiError(404, "No notes found.");
-        }
 
         return res.status(200).json(new ApiResponse(200, {
             notes,
@@ -117,6 +118,7 @@ const getNotes = asyncHandler(async (req, res) => {
         throw new ApiError(500, error?.message || "Failed to fetch notes");
     }
 });
+
 
 export{
     uploadnotes,

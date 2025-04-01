@@ -11,6 +11,7 @@ export default defineConfig({
       '/users': 'http://localhost:8000', // Proxy all requests starting with "/users" to the backend
       '/api': 'http://localhost:8000', // Proxy all requests starting with "/api" to the backend
       '/notes': 'http://localhost:8000', // Proxy all requests starting with "/api" to the backend
+      '/club': 'http://localhost:8000', // Proxy all requests starting with "/api" to the backend
     },
   },
 });
