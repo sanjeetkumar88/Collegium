@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {upload} from '../middlewares/multer.middleware.js'
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { createClub, getAllClubsForTeacherAndAdmin, getClubDetails } from "../controllers/club.controller.js";
+import { createClub, getAllClubsForTeacherAndAdmin, getClubDetails,getAllClubLeaders } from "../controllers/club.controller.js";
 
 
 
@@ -13,6 +13,7 @@ router.route("/createclub").post(createClub);
 
 // router.route("/getallclub").get(verifyJWT,getAllClubsForTeacherAndAdmin);
 router.route("/getallclub").get(getAllClubsForTeacherAndAdmin);
+router.route("/getallclubleaders").get(getAllClubLeaders);
 router.route("/:id").get(getClubDetails);
 
 

@@ -66,7 +66,7 @@ export default function ClubDetail() {
         <button className="bg-yellow-400 text-black px-4 py-2 rounded-lg shadow">
           {club.status}
         </button>
-      </div>
+      </div> 
 
       {/* Club Details Section */}
       <div className="bg-gray-800 p-6 mt-6 rounded-lg shadow-lg">

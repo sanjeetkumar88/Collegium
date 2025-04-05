@@ -222,5 +222,34 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 })
 
-export { registerUser, loginUser, logoutUser,refreshAccessToken };
+const getAllStudents = asyncHandler(async (req, res) => {
+  try {
+    const users = await User.find(
+      { role: "student" },
+      { username: 1, _id: 0 }
+    );
+
+    // Check if the users array is empty
+    if (users.length === 0) {
+      throw new ApiError(404, "No students found");
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200, {
+            users
+          }
+        )
+      );
+
+  } catch (error) {
+    // Return a custom error message for any unexpected errors
+    throw new ApiError(500, error?.message || "Error while Fetching the Students");
+  }
+});
+
+
+export { registerUser, loginUser, logoutUser,refreshAccessToken,getAllStudents };
  

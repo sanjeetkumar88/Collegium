@@ -322,6 +322,63 @@ const getClubDetails = asyncHandler(async (req, res) => {
     }
 });
 
+const getAllClubLeaders = asyncHandler(async (req, res) => {
+    try {
+      // Aggregate to group by leader and get only unique leaders
+      const clubLeaders = await Club.aggregate([
+        // Match all clubs
+        {
+          $match: {}
+        },
+        // Unwind the leaders (in case there are multiple leaders in the same document)
+        {
+          $unwind: "$leader"
+        },
+        // Group by the leader's ID and get the distinct leader info
+        {
+          $group: {
+            _id: "$leader", // Group by leader
+          }
+        },
+        // Lookup the full details of the leader (populating fullName, etc.)
+        {
+          $lookup: {
+            from: "users", // Assuming "users" is the collection for leader data
+            localField: "_id", // Match leader ID
+            foreignField: "_id",
+            as: "leaderDetails"
+          }
+        },
+        // Flatten the result
+        {
+          $unwind: "$leaderDetails"
+        },
+        // Project the desired fields
+        {
+          $project: {
+            _id: 0,
+            leader: "$leaderDetails.fullName" // Only include leader's details
+          }
+        }
+      ]);
+  
+      // If no leaders are found
+      if (!clubLeaders || clubLeaders.length === 0) {
+        return res.status(404).json({ message: "No distinct club leaders found" });
+      }
+  
+      return res.status(200).json({
+        success: true,
+        leaders: clubLeaders,
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  
+  
+
 
 
 
@@ -334,4 +391,5 @@ export {
     getAllClubsForTeacherAndAdmin,
     createClub,
     getClubDetails,
+    getAllClubLeaders,
 }
