@@ -9,6 +9,7 @@ import Login from './components/Pages/Login';
 import ResourcePage from './components/Pages/ResoucePage';
 import Club from './components/Pages/Club';
 import ClubDetail from './components/Pages/ClubDetails';
+import CreateEventForm from './components/Pages/createEvent';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -27,6 +28,7 @@ function App() {
           <Route path="/resources" element={<ResourcePage />} />
           <Route path ="/community" element={<Club />} />
           <Route path = "/community/:id" element={<ClubDetail />} />
+          <Route path = "/createevent" element={<CreateEventForm />} />
 
           
         </Route>

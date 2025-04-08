@@ -1,21 +1,31 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema(
   {
+    // Basic Info
     title: { type: String, required: true },
     description: { type: String },
 
-    date: { type: Date, required: true },
-    startTime: { type: String },
-    endTime: { type: String },
+    // Dates & Duration
+    startDate: { type: Date, required: true },
+    endDate: { type: Date },
+    duration: { type: String }, // Format: "HH:MM"
 
-    venue: { type: String },
-    isOnline: { type: Boolean, default: false },
-    meetingLink: { type: String },
+    // Online / Offline
+    medium: { type: String, enum: ["online", "offline"], default: "offline" },
+    meet: [String], // Meeting links (for online)
+    location: [String], // Venue or coordinates (for offline)
 
-    // Images
-    logo: { type: String },      // URL to logo image
-    coverImg: { type: String },  // URL to cover image
+    // Visual
+    image: { type: String }, // Cover image URL
+
+    // RSVP & Attendance
+    acceptingRsvp: { type: Boolean, default: true },
+    acceptingAttendance: { type: Boolean, default: false },
+
+    // Capacity & Access
+    maxParticipants: { type: Number },
+    privacy: { type: String, enum: ["public", "private"], default: "public" },
 
     // Organiser Info
     isExternalOrganiser: { type: Boolean, default: false },
@@ -30,13 +40,15 @@ const eventSchema = new mongoose.Schema(
       organisation: { type: String }, // Optional
     },
 
+    // Club / Department
     club: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Club",
     },
 
+    // Registration & Payment
+    price: { type: Number, default: 0 },
     invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-
     registeredUsers: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
@@ -50,20 +62,19 @@ const eventSchema = new mongoose.Schema(
       },
     ],
 
-    isFree: { type: Boolean, default: true },
-    price: { type: Number, default: 0 },
-
+    // Meta
     category: { type: String },
-    tags: [String],
+    language: { type: String },
+    tnc: { type: String }, // Terms and Conditions
+    adminNotes: { type: String },
 
-    capacity: { type: Number },
+    // Waitlist & Feedback
     waitlist: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         addedAt: { type: Date, default: Date.now },
       },
     ],
-
     feedback: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
@@ -72,28 +83,28 @@ const eventSchema = new mongoose.Schema(
       },
     ],
 
-    isRecurring: { type: Boolean, default: false },
-    recurrencePattern: { type: String },
-
+    // Status
     status: {
       type: String,
       enum: ["upcoming", "ongoing", "completed", "cancelled"],
       default: "upcoming",
     },
 
-    adminNotes: { type: String },
+    // Creator Info
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
-// Validation to ensure organiser info is correct
+// ✅ Organiser Validation
 eventSchema.pre("validate", function (next) {
   if (this.isExternalOrganiser) {
-    if (
-      !this.externalOrganiserInfo?.name ||
-      !this.externalOrganiserInfo?.email ||
-      !this.externalOrganiserInfo?.phone
-    ) {
+    const info = this.externalOrganiserInfo || {};
+    if (!info.name || !info.email || !info.phone) {
       return next(
         new Error("External organiser must have name, email, and phone.")
       );
@@ -106,4 +117,4 @@ eventSchema.pre("validate", function (next) {
   next();
 });
 
-module.exports = mongoose.model("Event", eventSchema);
+export const Event = mongoose.model("Event", eventSchema);

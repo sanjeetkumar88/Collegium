@@ -24,12 +24,15 @@ import notesRouter from './routes/notes.routes.js'
 
 import clubrouter from './routes/club.routes.js'
 
+import eventrouter from './routes/event.routes.js'
+
 
 // routes declaration
 
 app.use('/users',userRouter) 
 app.use('/notes',notesRouter) 
 app.use('/club',clubrouter)
+app.use('/event',eventrouter)
 
 
 
