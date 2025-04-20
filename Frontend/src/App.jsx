@@ -10,33 +10,50 @@ import ResourcePage from './components/Pages/ResoucePage';
 import Club from './components/Pages/Club';
 import ClubDetail from './components/Pages/ClubDetails';
 import CreateEventForm from './components/Pages/createEvent';
+import NotFound from './components/Pages/NotFound';
+import UnauthorizedPage from './components/UnauthorizePage/UnauthorizedPage';
+
+import PrivateRoute from './routes/PrivateRoute';
 
 function App() {
-  const [count, setCount] = useState(0);
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        
-        {/* PageLayout as the wrapper for the main routes */}
-        <Route path="/" element={<PageLayout />}>
-          <Route index element={<Home />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/resources" element={<ResourcePage />} />
-          <Route path ="/community" element={<Club />} />
-          <Route path = "/community/:id" element={<ClubDetail />} />
-          <Route path = "/createevent" element={<CreateEventForm />} />
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<Login />} />
 
-          
-        </Route>
+      {/* Layout Routes */}
+      <Route path="/" element={<PageLayout />}>
+        <Route index element={<Home />} />
+        <Route path="about" element={<About />} />
+        <Route path="resources" element={<ResourcePage />} />
 
-        {/* You can enable a NotFound route here */}
-        {/* <Route path="*" element={<NotFound />} /> */}
-      </Routes>
-    </BrowserRouter>
+        {/* Protected Routes */}
+        <Route
+          path="events"
+          element={<PrivateRoute element={<Events />} allowedRoles={["admin", "teacher", "student"]} />}
+        />
+        <Route
+          path="community"
+          element={<PrivateRoute element={<Club />} allowedRoles={["admin", "teacher", "student"]} />}
+        />
+        <Route
+          path="community/:id"
+          element={<PrivateRoute element={<ClubDetail />} allowedRoles={["admin", "teacher", "student"]} />}
+        />
+        <Route
+          path="createevent"
+          element={<PrivateRoute element={<CreateEventForm />} allowedRoles={["admin", "teacher", "student"]} />}
+        />
+      </Route>
+
+      {/* 404 */}
+      <Route path="*" element={<NotFound />} />
+      <Route path = "/unauthorized" element = {<UnauthorizedPage />} />
+    </Routes>
+  </BrowserRouter>
   );
 }
 

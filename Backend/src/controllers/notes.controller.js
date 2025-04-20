@@ -17,7 +17,6 @@ const uploadnotes = asyncHandler(async(req,res) => {
             throw new ApiError(400,"All field are require")
         }
         const NotesLocalPath = req.files?.notes[0]?.path;
-        console.log(NotesLocalPath);
 
         
         if(!NotesLocalPath){

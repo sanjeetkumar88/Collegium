@@ -1,7 +1,12 @@
 import React from "react";
 import { Badge } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
+import { useClub } from "../../context/ClubContext";
 
-const ClubCard = ({ coverImg, profileImg, name, tags, status }) => {
+const ClubCard = ({ coverImg, profileImg, name, tags, status, id }) => {
+  const clubactions = useClub();
+
+  const navigate = useNavigate();
   // Determine button color based on status
   const getStatusButtonClass = (status) => {
     switch (status) {
@@ -31,8 +36,8 @@ const ClubCard = ({ coverImg, profileImg, name, tags, status }) => {
         <h2 className="text-white text-xl font-bold">{name}</h2>
       </div>
       <div className="flex justify-center gap-4 pb-6">
-        <button className="bg-gray-800 text-white py-2 px-4 rounded-md border border-gray-900">About Us</button>
-        <button className={`py-2 px-4 rounded-md border ${getStatusButtonClass(status)}`}>{status}</button>
+        <button className="bg-gray-800 text-white py-2 px-4 rounded-md border border-gray-900 cursor-pointer" onClick={() => navigate(`/community/${id}`)}>About Us</button>
+        <button className={`py-2 px-4 rounded-md border ${getStatusButtonClass(status)} cursor-pointer`}>{status}</button>
       </div>
     </div>
   );

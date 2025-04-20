@@ -127,7 +127,7 @@ const loginUser = asyncHandler(async (req, res) =>{
 
    const {accessToken, refreshToken} = await generateAccessAndRefereshTokens(user._id)
 
-    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+    const loggedInUser = await User.findById(user._id).select("username email role fullName -_id")
 
     const options = {
         httpOnly: true,
@@ -142,7 +142,7 @@ const loginUser = asyncHandler(async (req, res) =>{
         new ApiResponse(
             200, 
             {
-                user: loggedInUser, accessToken, refreshToken
+                user: loggedInUser
             },
             "User logged In Successfully"
         )
@@ -251,5 +251,33 @@ const getAllStudents = asyncHandler(async (req, res) => {
 });
 
 
-export { registerUser, loginUser, logoutUser,refreshAccessToken,getAllStudents };
+
+const verifyUser = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const user = await User.findById(userId).select("username email role fullName"); // Expose only necessary fields
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  res.status(200).json({ 
+    user: {
+      _id:user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role
+    }
+  });
+});
+
+
+
+
+
+export { registerUser, loginUser, logoutUser,refreshAccessToken,getAllStudents,verifyUser};
  
