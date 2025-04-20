@@ -86,16 +86,16 @@ npm run dev
 
 ### Create a .env file with:
 
-PORT=5000
-MONGO_URI=your_mongo_db_uri
-JWT_SECRET=your_secret
-CLOUDINARY_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_key
-CLOUDINARY_API_SECRET=your_secret
-EMAIL_USER=your_email@example.com
-EMAIL_PASS=your_password
+-PORT=5000
+-MONGO_URI=your_mongo_db_uri
+-JWT_SECRET=your_secret
+-CLOUDINARY_NAME=your_cloud_name
+-CLOUDINARY_API_KEY=your_key
+-CLOUDINARY_API_SECRET=your_secret
+-EMAIL_USER=your_email@example.com
+-EMAIL_PASS=your_password
 
-### FRontend
+### Frontend
 
 cd client
 npm install
