@@ -107,7 +107,7 @@ const ResourcePage = () => {
             {notes.map((note) => (
               <Card key={note._id} shadow="sm" padding="lg" radius="md" withBorder>
                 <Card.Section>
-                  <Image src={note.thumbnail} height={160} alt={note.title} />
+                  <Image src={note.fileUrl} height={160} alt={note.title} />
                 </Card.Section>
 
                 <Group justify="space-between" mt="md" mb="xs">

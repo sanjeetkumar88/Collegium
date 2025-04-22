@@ -9,38 +9,36 @@ const createClub = asyncHandler(async (req, res) => {
   try {
     const { name, description, leader, mentor } = req.body;
 
-    if (
-      [name, description, leader, mentor].some((field) => field?.trim() === "")
-    ) {
-      throw new ApiError(400, "All fields are required");
+    if (!name?.trim() || !leader?.trim() || !Array.isArray(mentor) || mentor.length === 0) {
+      throw new ApiError(400, "All fields are required and mentor must be a non-empty array");
     }
 
     const existedClub = await Club.findOne({ name });
-
     if (existedClub) {
-      throw new ApiError(409, "Club name is already takened");
+      throw new ApiError(409, "Club name is already taken");
     }
 
     const club = await Club.create({
       name,
       description,
       leader,
-      mentor,
+      mentor, 
     });
 
-    const createdClub = await Club.findById(club._id);
+    const createdClub = await Club.findById(club._id)
 
     if (!createdClub) {
-      throw new ApiError(500, "Something wents wrong while creating the club");
+      throw new ApiError(500, "Something went wrong while creating the club");
     }
 
     return res
       .status(201)
-      .json(new ApiResponse(200, createdClub, "Club is created successfully"));
+      .json(new ApiResponse(200, createdClub, "Club created successfully"));
   } catch (error) {
-    throw new ApiError(500, error);
+    throw new ApiError(500, error?.message || "Internal Server Error");
   }
 });
+
 
 const getallclub = asyncHandler(async (req, res) => {
   try {

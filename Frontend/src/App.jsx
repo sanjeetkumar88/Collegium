@@ -14,6 +14,7 @@ import NotFound from './components/Pages/NotFound';
 import UnauthorizedPage from './components/UnauthorizePage/UnauthorizedPage';
 
 import PrivateRoute from './routes/PrivateRoute';
+import CreateClub from './components/Pages/CreateClub';
 
 function App() {
 
@@ -46,6 +47,10 @@ function App() {
         <Route
           path="createevent"
           element={<PrivateRoute element={<CreateEventForm />} allowedRoles={["admin", "teacher", "student"]} />}
+        />
+        <Route
+        path="community/createclub"
+        element={<PrivateRoute element = {<CreateClub />} allowedRoles = {["admin"]} />}
         />
       </Route>
 

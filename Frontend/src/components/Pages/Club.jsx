@@ -108,7 +108,7 @@ const Club = () => {
           variant="light"
           leftSection={<IoIosAddCircle size={14} />}
           className="p-6 space-y-6 ml-5"
-          onClick={() => navigate("/createclub")}
+          onClick={() => navigate("createclub")}
         >
           Create Club
         </Button>
