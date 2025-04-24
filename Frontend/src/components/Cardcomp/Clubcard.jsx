@@ -3,7 +3,7 @@ import { Badge } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { useClub } from "../../context/ClubContext";
 
-const ClubCard = ({ coverImg, profileImg, name, tags, status, id }) => {
+const ClubCard = ({ coverImg, profileImg, name, tags, status, id ,onApply}) => {
   const clubactions = useClub();
 
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ const ClubCard = ({ coverImg, profileImg, name, tags, status, id }) => {
       </div>
       <div className="flex justify-center gap-4 pb-6">
         <button className="bg-gray-800 text-white py-2 px-4 rounded-md border border-gray-900 cursor-pointer" onClick={() => navigate(`/community/${id}`)}>About Us</button>
-        <button className={`py-2 px-4 rounded-md border ${getStatusButtonClass(status)} cursor-pointer`}>{status}</button>
+        <button className={`py-2 px-4 rounded-md border ${getStatusButtonClass(status)} cursor-pointer ` } onClick={onApply} >{status}</button>
       </div>
     </div>
   );

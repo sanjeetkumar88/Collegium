@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getNotes, uploadnotes } from "../controllers/notes.controller.js";
+import { getNotes, uploadnotes,updateNote,deleteNote,getUserNotes } from "../controllers/notes.controller.js";
 import {upload} from '../middlewares/multer.middleware.js'
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -20,5 +20,9 @@ router.route("/uploadnotes").post(
 
 
 router.route("/getnotes").get(getNotes);
+
+router.put("/:id", verifyJWT, updateNote);
+router.get("/user/mynotes", verifyJWT, getUserNotes);
+router.delete("/:id", verifyJWT, deleteNote);
 
 export default router;

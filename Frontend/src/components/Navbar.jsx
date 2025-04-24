@@ -25,8 +25,8 @@ const navItems = [
     icon: <FaFolderOpen />,
     items: [
       { name: "PYQ's", type: "pyq", description: "Previous Year papers of AKTU University" },
-      { name: "Lectures", type: "lectures", description: "Online lectures sorted for you subject-wise" },
-      { name: "Short Notes", type: "short-notes", description: "Short notes for quick revision" },
+      { name: "Lectures", type: "lecture", description: "Online lectures sorted for you subject-wise" },
+      { name: "Short Notes", type: "short-note", description: "Short notes for quick revision" },
       { name: "Question Bank", type: "question-bank", description: "Subject-wise question banks" },
       { name: "Notes", type: "notes", description: "Chapter-wise notes for each year" },
       { name: "Quantum", type: "quantum", description: "Subject-wise quantum" },

@@ -8,6 +8,7 @@ import { FiFilter } from "react-icons/fi";
 import { useAuth } from "../../context/Authcontext";
 import { IoIosAddCircle } from "react-icons/io";
 import { useDebounce } from "use-debounce";
+import { useClub } from "../../context/ClubContext";
 
 const Club = () => {
   const [clubs, setClubs] = useState([]);
@@ -91,6 +92,10 @@ const Club = () => {
     params.set("page", page);
     setSearchParams(params);
   }, [debouncedSearch, selectedCategory, selectedType, selectedMembership, page]);
+
+   const {handleApply} = useClub();
+
+  
 
   return (
     <div className="p-6">
@@ -195,6 +200,7 @@ const Club = () => {
               tags={club.tags}
               status={club.status}
               id={club._id}
+              onApply={() => handleApply(club._id, auth.authUser._id)}
             />
           ))
         ) : (

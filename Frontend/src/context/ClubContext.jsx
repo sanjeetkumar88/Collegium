@@ -12,6 +12,7 @@ export const ClubProvider = ({ children }) => {
   const [refreshApplicants, setRefreshApplicants] = useState(false);
   const [refreshMembers, setRefreshMembers] = useState(false);
   const [refreshLeaders, setRefreshLeaders] = useState(false);
+  const [applying,setApplying] = useState(false);
 
   const toggleRefresh = (setter) => setter((prev) => !prev);
 
@@ -74,6 +75,20 @@ export const ClubProvider = ({ children }) => {
     }
   };
 
+  const handleApply = async (id,userId) =>{
+    setApplying(true);
+    try {
+      const response = await axios.post(`/club/${id}/joinclub`, {
+        userId
+      });
+      return response.data;
+    } catch (err) {
+      alert(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setApplying(false);
+    }
+  }
+
   return (
     <ClubContext.Provider
       value={{
@@ -91,6 +106,9 @@ export const ClubProvider = ({ children }) => {
         setRefreshMembers,
         refreshLeaders,
         setRefreshLeaders,
+        handleApply,
+        applying,
+        setApplying,
       }}
     >
       {children}

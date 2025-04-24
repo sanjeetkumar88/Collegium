@@ -44,6 +44,7 @@ const noteSchema = new Schema(
     branch: {
       type: String,
       enum: [
+        "Common",
         "Computer Science",
         "Mechanical",
         "Electrical",

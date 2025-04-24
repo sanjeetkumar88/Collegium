@@ -15,6 +15,7 @@ import UnauthorizedPage from './components/UnauthorizePage/UnauthorizedPage';
 
 import PrivateRoute from './routes/PrivateRoute';
 import CreateClub from './components/Pages/CreateClub';
+import CreateNote from './components/Pages/CreateNote';
 
 function App() {
 
@@ -31,7 +32,14 @@ function App() {
         <Route path="about" element={<About />} />
         <Route path="resources" element={<ResourcePage />} />
 
+
+
         {/* Protected Routes */}
+        <Route
+        path="resources/uploadnotes"
+        element = {<PrivateRoute element={<CreateNote />} allowedRoles={["admin", "teacher", "student"]} />}
+        />
+
         <Route
           path="events"
           element={<PrivateRoute element={<Events />} allowedRoles={["admin", "teacher", "student"]} />}
@@ -53,6 +61,7 @@ function App() {
         element={<PrivateRoute element = {<CreateClub />} allowedRoles = {["admin"]} />}
         />
       </Route>
+      
 
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
