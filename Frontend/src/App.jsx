@@ -1,78 +1,132 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from './components/Pages/Home';
-import Events from './components/Pages/Events';
-import PageLayout from './components/layout/PageLayout';
-import About from './components/Pages/About';
-import Register from './components/Pages/Register';
-import Login from './components/Pages/Login';
-import ResourcePage from './components/Pages/ResoucePage';
-import Club from './components/Pages/Club';
-import ClubDetail from './components/Pages/ClubDetails';
-import CreateEventForm from './components/Pages/createEvent';
-import NotFound from './components/Pages/NotFound';
-import UnauthorizedPage from './components/UnauthorizePage/UnauthorizedPage';
+import Home from "./components/Pages/Home";
+import Events from "./components/Pages/Events";
+import PageLayout from "./components/layout/PageLayout";
+import About from "./components/Pages/About";
+import Register from "./components/Pages/Register";
+import Login from "./components/Pages/Login";
+import ResourcePage from "./components/Pages/ResoucePage";
+import Club from "./components/Pages/Club";
+import ClubDetail from "./components/Pages/ClubDetails";
+import CreateEventForm from "./components/Pages/createEvent";
+import NotFound from "./components/Pages/NotFound";
+import UnauthorizedPage from "./components/UnauthorizePage/UnauthorizedPage";
 
-import PrivateRoute from './routes/PrivateRoute';
-import CreateClub from './components/Pages/CreateClub';
-import CreateNote from './components/Pages/CreateNote';
-import CreateProject from './components/Pages/CreateProject';
+import PrivateRoute from "./routes/PrivateRoute";
+import CreateClub from "./components/Pages/CreateClub";
+import CreateNote from "./components/Pages/CreateNote";
+import CreateProject from "./components/Pages/CreateProject";
+import Projects from "./components/Pages/Projects";
+import ProjectDetail from "./components/Pages/ProjectDetail";
 
 function App() {
-
   return (
     <BrowserRouter>
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/register" element={<Register />} />
-      <Route path="/login" element={<Login />} />
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
 
-      {/* Layout Routes */}
-      <Route path="/" element={<PageLayout />}>
-        <Route index element={<Home />} />
-        <Route path="about" element={<About />} />
-        <Route path="resources" element={<ResourcePage />} />
+        {/* Layout Routes */}
+        <Route path="/" element={<PageLayout />}>
+          <Route index element={<Home />} />
+          <Route path="about" element={<About />} />
+          <Route path="resources" element={<ResourcePage />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="resources/uploadnotes"
+            element={
+              <PrivateRoute
+                element={<CreateNote />}
+                allowedRoles={["admin", "teacher", "student"]}
+              />
+            }
+          />
+
+          <Route
+            path="events"
+            element={
+              <PrivateRoute
+                element={<Events />}
+                allowedRoles={["admin", "teacher", "student"]}
+              />
+            }
+          />
+          <Route
+            path="community"
+            element={
+              <PrivateRoute
+                element={<Club />}
+                allowedRoles={["admin", "teacher", "student"]}
+              />
+            }
+          />
+          <Route
+            path="community/:id"
+            element={
+              <PrivateRoute
+                element={<ClubDetail />}
+                allowedRoles={["admin", "teacher", "student"]}
+              />
+            }
+          />
+          <Route
+            path="createevent"
+            element={
+              <PrivateRoute
+                element={<CreateEventForm />}
+                allowedRoles={["admin", "teacher", "student"]}
+              />
+            }
+          />
+          <Route
+            path="project/create-project"
+            element={
+              <PrivateRoute
+                element={<CreateProject />}
+                allowedRoles={["admin", "teacher", "student"]}
+              />
+            }
+          />
+          <Route
+            path="community/createclub"
+            element={
+              <PrivateRoute element={<CreateClub />} allowedRoles={["admin"]} />
+            }
+          />
+
+          <Route
+            path="project/explore-projects"
+            element={
+              <PrivateRoute
+                element={<Projects />}
+                allowedRoles={["admin", "teacher", "student"]}
+              />
+            }
+          />
+
+          <Route
+            path="project/explore-projects/:id"
+            element={
+              <PrivateRoute
+                element={<ProjectDetail />}
+                allowedRoles={["admin", "teacher", "student"]}
+              />
+            }
+          />
 
 
 
-        {/* Protected Routes */}
-        <Route
-        path="resources/uploadnotes"
-        element = {<PrivateRoute element={<CreateNote />} allowedRoles={["admin", "teacher", "student"]} />}
-        />
 
-        <Route
-          path="events"
-          element={<PrivateRoute element={<Events />} allowedRoles={["admin", "teacher", "student"]} />}
-        />
-        <Route
-          path="community"
-          element={<PrivateRoute element={<Club />} allowedRoles={["admin", "teacher", "student"]} />}
-        />
-        <Route
-          path="community/:id"
-          element={<PrivateRoute element={<ClubDetail />} allowedRoles={["admin", "teacher", "student"]} />}
-        />
-        <Route
-          path="createevent"
-          element={<PrivateRoute element={<CreateEventForm />} allowedRoles={["admin", "teacher", "student"]} />}
-        />
-        <Route 
-        path="project/create-project"
-        element={<PrivateRoute element={<CreateProject />} allowedRoles={["admin", "teacher", "student"]} />}
-        />
-        <Route
-        path="community/createclub"
-        element={<PrivateRoute element = {<CreateClub />} allowedRoles = {["admin"]} />}
-        />
-      </Route>
-      
+        </Route>
 
-      {/* 404 */}
-      <Route path="*" element={<NotFound />} />
-      <Route path = "/unauthorized" element = {<UnauthorizedPage />} />
-    </Routes>
-  </BrowserRouter>
+        {/* 404 */}
+        <Route path="*" element={<NotFound />} />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

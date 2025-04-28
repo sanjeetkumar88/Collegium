@@ -79,13 +79,22 @@ const projectSchema = new mongoose.Schema({
     required: true,
   },
 
+  // Members with flexible roles
   members: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+      },
+      role: {
+        type: String,
+        required: true,
+      }
     }
   ],
 
+  // Updated collaborator invitation schema
   collaboratorsInvited: [
     {
       user: {
@@ -100,10 +109,15 @@ const projectSchema = new mongoose.Schema({
         type: String,
         enum: ['pending', 'accepted', 'declined'],
         default: 'pending',
+      },
+      role: {
+        type: String, 
+        required: true,
       }
     }
   ],
 
+  // Join requests with flexible roles
   joinRequests: [
     {
       user: {
@@ -112,6 +126,10 @@ const projectSchema = new mongoose.Schema({
         required: true,
       },
       message: String,
+      role: {
+        type: String, 
+        required: true,
+      },
       requestedAt: {
         type: Date,
         default: Date.now,
