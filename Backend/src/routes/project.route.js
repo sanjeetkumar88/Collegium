@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {upload} from '../middlewares/multer.middleware.js'
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { createProject, getAllProject, getProjectDetail } from "../controllers/project.controller.js"
+import { approveJoinRequest, createProject, getAllProject, getJoinRequests, getProjectDetail, joinProject, updateProjectCoverImage, updateProjectDetails } from "../controllers/project.controller.js"
 
 const router = Router();
 
@@ -18,6 +18,15 @@ router.route("/createproject").post(
 router.route("/getallprojects").get(verifyJWT,getAllProject);
 
 router.route("/:id").get(verifyJWT,getProjectDetail);
+router.route("/:id/joinprojectrequest").post(verifyJWT,joinProject);
+router.route("/:id/getjoinrequest").get(verifyJWT,getJoinRequests);
+router.route("/:id/joinrequests/approve").post(verifyJWT,approveJoinRequest);
+router.route("/:id/joinrequests/reject").post(verifyJWT,approveJoinRequest);
+router.route("/:id/editcoverimg").post(verifyJWT,
+    upload.single("coverImage"),
+    updateProjectCoverImage
+)
+router.route("/:id/editprojectdetails").post(verifyJWT,updateProjectDetails)
 
 
 

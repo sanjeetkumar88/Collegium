@@ -125,7 +125,10 @@ const projectSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
       },
-      message: String,
+      message: {
+        type:String,
+        require:false,
+      },
       role: {
         type: String, 
         required: true,

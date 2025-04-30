@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "../../context/Authcontext";
+import { useAuth } from "../../context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
@@ -36,8 +36,11 @@ function Login() {
     try {
       const response = await axios.post('/users/login', formData);
       if (response.status === 200) {
+        
         auth.login(response.data.data.user);
-        navigate('/');
+        
+        
+        window.location.href = '/';
       }
     } catch (error) {
       if (error.response) {

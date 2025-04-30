@@ -87,6 +87,9 @@ const createProject = asyncHandler(async (req, res) => {
 
   const getAllProject = asyncHandler(async (req, res) => {
     let { userId, page, limit = 15, title, category } = req.query;
+    
+    
+    
 
     
     page = Number(page) || 1;
@@ -201,7 +204,7 @@ const getProjectDetail = async (req, res) => {
               in: {
                 id: '$$member._id',
                 logo: '$$member.logo',
-                name: '$$member.name',
+                name: '$$member.fullName',
                 username: '$$member.username',
                 role: {
                   $arrayElemAt: [
@@ -209,7 +212,7 @@ const getProjectDetail = async (req, res) => {
                       $filter: {
                         input: '$members',
                         as: 'm',
-                        cond: { $eq: ['$$m.user', '$$member._id'] },
+                        cond: { $eq: ['$$m.user', '$$member.user'] },
                       },
                     },
                     0,
@@ -236,10 +239,10 @@ const getProjectDetail = async (req, res) => {
       problemStatement: formattedProject.problemStatement || '',
       category: formattedProject.category,
       status: formattedProject.status,
-      liveLink: formattedProject.projectUrl,  // Renaming projectUrl to liveLink
-      githubLink: formattedProject.githubRepo,  // Renaming githubRepo to githubLink
+      liveLink: formattedProject.projectUrl,  
+      githubLink: formattedProject.githubRepo,  
       technologiesUsed: formattedProject.technologiesUsed,
-      openForCollaboration: formattedProject.openForCollaboration,  // Include collaboration status
+      openForCollaboration: formattedProject.openForCollaboration,  
       author: {
         name: formattedProject.createdBy.name,
         username: formattedProject.createdBy.username,
@@ -250,7 +253,7 @@ const getProjectDetail = async (req, res) => {
         logo: member.logo || '',
         name: member.name,
         username: member.username,
-        role: member.role || 'Member',  // Handle missing role
+        role: member.role || 'Member',  
       })),
     };
 
@@ -336,7 +339,7 @@ const getProjectMembers = async (req, res) => {
     const projectId = req.params.id;
 
     // Find the project and populate the members field
-    const project = await Project.findById(projectId).populate('members', 'name email');
+    const project = await Project.findById(projectId).populate('members', 'fullName email');
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
@@ -359,14 +362,25 @@ const joinProject = async (req, res) => {
   try {
     const projectId = req.params.id;
     const userId = req.user._id;
-    const { message, role } = req.body;
+    const {role,message } = req.body;
 
-    const validRoles = ['member', 'contributor', 'collaborator'];
-    if (!validRoles.includes(role)) {
-      return res.status(400).json({ message: 'Invalid role specified' });
+    
+    
+    if (!role) {
+      return res.status(400).json({ message: 'role cannot be empty' });
     }
 
     const project = await Project.findById(projectId);
+
+    if(req.user.role === 'admin'){
+      throw new ApiError(400,"Admin cannot join the project" || error.message)
+    }
+    console.log(project.createdBy);
+    
+
+    if(project.createdBy === userId){
+      throw new ApiError(400,"Author cannot join the project" || error.message)
+    }
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
@@ -394,7 +408,6 @@ const joinProject = async (req, res) => {
 
     res.status(200).json({
       message: 'Join request sent successfully',
-      data: project,
     });
   } catch (error) {
     console.error('Error sending join request:', error);
@@ -408,8 +421,10 @@ const joinProject = async (req, res) => {
 const approveJoinRequest = async (req, res) => {
   try {
     const projectId = req.params.id;
-    const userId = req.params.userId; // User who is being approved or rejected
-    const action = req.body.action; // Action can be 'approve' or 'reject'
+    const userId = req.body.userId; 
+    const action = req.body.action;
+    console.log(action,userId,projectId);
+    
 
     const project = await Project.findById(projectId);
 
@@ -460,6 +475,126 @@ const approveJoinRequest = async (req, res) => {
 };
 
 
+const getJoinRequests = async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    console.log(projectId);
+    
+
+    const project = await Project.findById(projectId)
+      .populate('joinRequests.user', 'avatar _id fullName username');
+
+    if (!project) {
+      throw new ApiError(404, "Project not found");
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, project.joinRequests, "Join requests fetched"));
+  } catch (error) {
+    // Let the global error handler catch this
+    throw new ApiError(500, error.message || "Server error while fetching join requests");
+  }
+};
+
+export const updateProjectCoverImage = async (req, res) => {
+  try {
+    const projectId = req.params.id;
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      throw new ApiError(404, "Project not found");
+    }
+
+    const coverImgLocalPath = req.file?.path; // multer.single("coverImage") gives req.file
+    if (!coverImgLocalPath) {
+      throw new ApiError(400, "Cover image file is required");
+    }
+
+    const uploadedImg = await uploadOnCloudinary(coverImgLocalPath, "image");
+    if (!uploadedImg?.secure_url) {
+      throw new ApiError(400, "Image upload failed");
+    }
+
+    project.coverImage = uploadedImg.secure_url;
+    await project.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, project, "Cover image updated successfully"));
+  } catch (error) {
+    // return res.status(error.status || 500).json(
+    //   new ApiResponse(
+    //     error.status || 500,
+    //     error.message || "Something went wrong while updating cover image"
+    //   )
+    // );
+
+    throw new ApiError(500, error.message || "Something went wrong while updating cover image")
+  }
+};
+
+export const updateProjectDetails = async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const {
+      title,
+      description,
+      category,
+      tags,
+      problemStatement,
+      technologiesUsed,
+      status,
+      projectUrl,
+      githubRepo,
+      openForCollaboration,
+      contactInfo,
+      startDate,
+      endDate,
+      demoVideo
+    } = req.body;
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      throw new ApiError(404, "Project not found");
+    }
+
+    // Only allow the creator to update
+    if (project.createdBy.toString() !== req.user._id.toString()) {
+      throw new ApiError(403, "You are not authorized to edit this project");
+    }
+
+    // Update only the allowed fields
+    project.title = title ?? project.title;
+    project.description = description ?? project.description;
+    project.category = category ?? project.category;
+    project.tags = tags ?? project.tags;
+    project.problemStatement = problemStatement ?? project.problemStatement;
+    project.technologiesUsed = technologiesUsed ?? project.technologiesUsed;
+    project.status = status ?? project.status;
+    project.projectUrl = projectUrl ?? project.projectUrl;
+    project.githubRepo = githubRepo ?? project.githubRepo;
+    project.openForCollaboration = openForCollaboration ?? project.openForCollaboration;
+    project.contactInfo = contactInfo ?? project.contactInfo;
+    project.startDate = startDate ?? project.startDate;
+    project.endDate = endDate ?? project.endDate;
+    project.demoVideo = demoVideo ?? project.demoVideo;
+
+    await project.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, project, "Project details updated successfully"));
+  } catch (error) {
+    return new ApiError(500, error.message || "Something wents wrong")
+  }
+};
+
+
+
+
+
+
 
 
 
@@ -475,6 +610,7 @@ const approveJoinRequest = async (req, res) => {
         getProjectMembers,
         leaveProject,
         deleteProject,
+        getJoinRequests,
         
 
   }
