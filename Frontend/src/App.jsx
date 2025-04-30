@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./components/Pages/Home";
 import Events from "./components/Pages/Events";
 import PageLayout from "./components/layout/PageLayout";
@@ -19,14 +19,17 @@ import CreateNote from "./components/Pages/CreateNote";
 import CreateProject from "./components/Pages/CreateProject";
 import Projects from "./components/Pages/Projects";
 import ProjectDetail from "./components/Pages/ProjectDetail";
+import { useAuth } from "./context/AuthContext";
 
 function App() {
+  const auth = useAuth();
   return (
     <BrowserRouter>
       <Routes>
         {/* Public Routes */}
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={auth.authUser ? <Navigate to="/" replace /> : <Register />} />
+
+        <Route path="/login" element={auth.authUser ? <Navigate to="/" replace /> : <Login />} />
 
         {/* Layout Routes */}
         <Route path="/" element={<PageLayout />}>
