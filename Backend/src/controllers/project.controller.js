@@ -284,7 +284,7 @@ const deleteProject = async (req, res) => {
     }
 
     // Verify if the user is the creator of the project
-    if (project.createdBy.toString() !== userId.toString()) {
+    if (project.createdBy.toString() !== userId.toString() ) {
       return res.status(403).json({ message: 'You are not authorized to delete this project' });
     }
 

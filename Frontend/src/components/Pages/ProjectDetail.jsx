@@ -16,10 +16,11 @@ import {
   FaUserPlus,
   FaSignOutAlt,
   FaEdit,
+  FaTrash,
 } from "react-icons/fa";
 import ProjectCover from "../Cardcomp/projectDetail/ProjectCover";
 import UserCardSm from "../Cardcomp/projectDetail/UserCardSm";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 import JoinRequestModal from "../joinRequestModal";
@@ -34,12 +35,11 @@ const ProjectDetail = () => {
   const [roleInput, setRoleInput] = useState("");
   const [roleInputModel, setRoleInputModel] = useState(false);
   const [editCoverOpen, setEditCoverOpen] = useState(false);
-  const [editDetailsOpen,setEditDetailsOpen]  = useState(false);
+  const [editDetailsOpen, setEditDetailsOpen] = useState(false);
 
   const auth = useAuth();
 
   const [joinModalOpen, setJoinModalOpen] = useState(false);
-
 
   const fetchProject = async () => {
     try {
@@ -55,10 +55,19 @@ const ProjectDetail = () => {
       setLoading(false);
     }
   };
+  const navigate = useNavigate();
+
+  const handleProjectDelete = async () => {
+    try {
+      const res = await axios.delete(`/devproject/${id}/deleteproject`);
+      navigate("/project/explore-projects/");
+    } catch (error) {
+      console.error("Error deleting project:", error.response?.data || error.message);
+      
+    }
+  };
 
   useEffect(() => {
-    
-
     fetchProject();
   }, [id]);
 
@@ -72,7 +81,9 @@ const ProjectDetail = () => {
 
   const isAuthor = auth.authUser.username === projectData.author.username;
 
-  // console.log(isAuthor, !isMember);
+  const isAdmin = auth.authUser.role === "admin";
+
+  // console.log();
 
   return (
     <div className="bg-gradient-to-b from-gray-100 to-white text-gray-900 min-h-screen p-8">
@@ -120,14 +131,17 @@ const ProjectDetail = () => {
               </Button>
             </Menu.Target>
             <Menu.Dropdown>
-              {!isMember && !isAuthor && projectData.openForCollaboration && (
-                <Menu.Item
-                  icon={<FaUserPlus />}
-                  onClick={() => setRoleInputModel(true)}
-                >
-                  Request to Join
-                </Menu.Item>
-              )}
+              {!isMember &&
+                !isAuthor &&
+                projectData.openForCollaboration &&
+                !isAdmin && (
+                  <Menu.Item
+                    icon={<FaUserPlus />}
+                    onClick={() => setRoleInputModel(true)}
+                  >
+                    Request to Join
+                  </Menu.Item>
+                )}
 
               {isMember && (
                 <Menu.Item
@@ -149,14 +163,15 @@ const ProjectDetail = () => {
                 </Menu.Item>
               )}
 
-              {isAuthor && (
-                <Menu.Item
-                  icon={<FaUserPlus />}
-                  onClick={() => setJoinModalOpen(true)}
-                >
-                  View Join Requests
-                </Menu.Item>
-              )}
+              {isAuthor ||
+                (isAdmin && (
+                  <Menu.Item
+                    icon={<FaUserPlus />}
+                    onClick={() => setJoinModalOpen(true)}
+                  >
+                    View Join Requests
+                  </Menu.Item>
+                ))}
 
               {(isAuthor || auth.authUser.role === "admin") && (
                 <Menu.Item
@@ -164,6 +179,15 @@ const ProjectDetail = () => {
                   onClick={() => setEditDetailsOpen(true)}
                 >
                   Edit Project Details
+                </Menu.Item>
+              )}
+
+              {(isAuthor || auth.authUser.role === "admin") && (
+                <Menu.Item
+                  icon={<FaTrash />}
+                  onClick={() => handleProjectDelete()}
+                >
+                  Delete Project
                 </Menu.Item>
               )}
             </Menu.Dropdown>
@@ -376,11 +400,11 @@ const ProjectDetail = () => {
         projectId={id}
       />
 
-      <EditProjectDetailsModal 
-      projectData={projectData}
-      opened={editDetailsOpen}
-      onClose={() => setEditDetailsOpen(false)}
-      onSave={() => fetchProject()}
+      <EditProjectDetailsModal
+        projectData={projectData}
+        opened={editDetailsOpen}
+        onClose={() => setEditDetailsOpen(false)}
+        onSave={() => fetchProject()}
       />
     </div>
   );

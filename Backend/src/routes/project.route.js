@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {upload} from '../middlewares/multer.middleware.js'
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { approveJoinRequest, createProject, getAllProject, getJoinRequests, getProjectDetail, joinProject, updateProjectCoverImage, updateProjectDetails } from "../controllers/project.controller.js"
+import { approveJoinRequest, createProject, deleteProject, getAllProject, getJoinRequests, getProjectDetail, joinProject, updateProjectCoverImage, updateProjectDetails } from "../controllers/project.controller.js"
 
 const router = Router();
 
@@ -27,6 +27,7 @@ router.route("/:id/editcoverimg").post(verifyJWT,
     updateProjectCoverImage
 )
 router.route("/:id/editprojectdetails").post(verifyJWT,updateProjectDetails)
+router.route("/:id/deleteproject").post(verifyJWT,deleteProject);
 
 
 

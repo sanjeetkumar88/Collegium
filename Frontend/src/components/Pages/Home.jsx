@@ -1,70 +1,25 @@
 import React from 'react';
+import HeroSection from '../Frontepage/HeroSection';
+import TestimonialMarquee from '../Frontepage/TestimonialMarquee';
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-300">
-      
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100">
+      <div className="absolute inset-0 bg-[url('/texture.svg')] opacity-[0.07] bg-cover bg-center pointer-events-none" />
 
-      {/* Hero Section */}
-      <section className="text-center py-20 bg-gradient-to-b from-gray-200 to-white">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">Welcome To <span className="text-indigo-600">COLLEGIUM</span></h1>
-        <p className="text-gray-600 mb-6">We’ve solutions at method on you and to allow for anything, are way to build on all potentials.</p>
-        <div className="space-x-4">
-          <button className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500">Home</button>
-          <button className="px-6 py-2 border border-gray-400 text-gray-600 rounded-lg hover:bg-gray-200">About</button>
-        </div>
-      </section>
+{/* Optional blurred blobs */}
+<div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[60vw] h-[60vw] bg-indigo-300 opacity-30 rounded-full blur-3xl z-0" />
+<div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-200 opacity-20 rounded-full blur-2xl z-0" />
 
-      {/* Collegiums Section */}
-      <section className="bg-gray-900 text-white py-16">
-        <h2 className="text-center text-3xl font-bold mb-12">COLLEGIUMS</h2>
-        <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-6">
-          {/* Card 1 */}
-          <div className="bg-white text-gray-800 p-6 rounded-lg shadow-lg">
-            <div className="flex items-center mb-4">
-              <img 
-                src="https://via.placeholder.com/50" 
-                alt="Person" 
-                className="w-12 h-12 rounded-full mr-4"
-              />
-              <h3 className="text-lg font-bold">Yale Tectious</h3>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">Yale provides expert-level solutions that save time and increase outcomes.</p>
-            <a href="#" className="text-indigo-600 font-bold">Learn More</a>
-          </div>
+      {/* Optional padding or layout container */}
+      <main className="">
+        <HeroSection />
+        <TestimonialMarquee />
 
-          {/* Card 2 */}
-          <div className="bg-white text-gray-800 p-6 rounded-lg shadow-lg">
-            <div className="flex items-center mb-4">
-              <img 
-                src="https://via.placeholder.com/50" 
-                alt="Person" 
-                className="w-12 h-12 rounded-full mr-4"
-              />
-              <h3 className="text-lg font-bold">First Resource</h3>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">First in place, resourceful solutions offer efficiency and impact.</p>
-            <a href="#" className="text-indigo-600 font-bold">Learn More</a>
-          </div>
-
-          {/* Card 3 */}
-          <div className="bg-white text-gray-800 p-6 rounded-lg shadow-lg">
-            <div className="flex items-center mb-4">
-              <img 
-                src="https://via.placeholder.com/50" 
-                alt="Person" 
-                className="w-12 h-12 rounded-full mr-4"
-              />
-              <h3 className="text-lg font-bold">Valet Fectility</h3>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">Valet’s services promise quality results in record time.</p>
-            <a href="#" className="text-indigo-600 font-bold">Learn More</a>
-          </div>
-        </div>
-      </section>
+        
+      </main>
     </div>
   );
 };
-
 
 export default Home;

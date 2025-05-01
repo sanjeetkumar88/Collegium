@@ -1,6 +1,7 @@
 import React from 'react'
 import Navbar from '../Navbar';
 import { Outlet } from "react-router-dom";
+import Footer from '../Frontepage/Footer';
 
 function PageLayout() {
     return (
@@ -15,6 +16,10 @@ function PageLayout() {
         <Outlet />
       </main>
 
+      <footer>
+        <Footer />
+      </footer>
+ 
       
     </div>
     )
