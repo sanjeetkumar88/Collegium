@@ -19,13 +19,14 @@ import {
   updateDescription,
   updateCoverImg,
   updateLogoImg,
+  getMyClubs,
 } from "../controllers/club.controller.js";
 import { checkRole } from "../middlewares/checkRole.js";
 
 const router = Router();
 
 router.route("/createclub").post(verifyJWT, checkRole("admin"), createClub);
-
+router.route("/mine").get(verifyJWT,getMyClubs);
 router.route("/getallclub").get(verifyJWT, getallclub);
 router.route("/getallclubleaders").get(getAllClubLeaders);
 router.route("/:id").get(verifyJWT, getClubDetails);
@@ -60,5 +61,7 @@ router.route("/:id/updatelogo").patch(
         },
     ]),
     updateLogoImg);
+
+
 
 export default router;

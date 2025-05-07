@@ -20,6 +20,8 @@ import CreateProject from "./components/Pages/CreateProject";
 import Projects from "./components/Pages/Projects";
 import ProjectDetail from "./components/Pages/ProjectDetail";
 import { useAuth } from "./context/AuthContext";
+import EventDetails from "./components/Pages/EventDetails";
+import EditEventForm from "./components/Pages/EditEventForm";
 
 function App() {
   const auth = useAuth();
@@ -49,7 +51,7 @@ function App() {
           />
 
           <Route
-            path="events"
+            path="/events"
             element={
               <PrivateRoute
                 element={<Events />}
@@ -76,7 +78,7 @@ function App() {
             }
           />
           <Route
-            path="createevent"
+            path="/events/createevent"
             element={
               <PrivateRoute
                 element={<CreateEventForm />}
@@ -118,6 +120,27 @@ function App() {
                 allowedRoles={["admin", "teacher", "student"]}
               />
             }
+          />
+          
+          <Route 
+          path="events/:id"
+          element = {
+            <PrivateRoute 
+            element={<EventDetails />}
+            allowedRoles={["admin", "teacher", "student"]}
+            />
+          }
+          />
+
+          
+          <Route 
+          path="events/:id/edit"
+          element = {
+            <PrivateRoute 
+            element={<EditEventForm />}
+            allowedRoles={["admin", "teacher", "student"]}
+            />
+          }
           />
 
 

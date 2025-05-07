@@ -44,6 +44,8 @@ const getallclub = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
 
+    
+
     const { page = 1, limit = 12, type, tag, membership, name } = req.query;
 
     let pageNumber = parseInt(page, 10);
@@ -1054,6 +1056,25 @@ const updateLogoImg = asyncHandler(async (req, res) => {
   }
 });
 
+const getMyClubs = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user?._id;
+
+    const myClubs = await Club.find({
+      leader: userId,
+    }).select("_id name");
+
+    return res.status(200).json({
+      success: true,
+      clubs: myClubs, // This will be an empty array if no clubs are found
+    });
+  } catch (error) {
+    console.error("Error in getMyClubs:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
 
 
 
@@ -1139,6 +1160,7 @@ export {
   removecoleader,
   updateDescription,
   updateCoverImg,
-  updateLogoImg
+  updateLogoImg,
+  getMyClubs
   
 };

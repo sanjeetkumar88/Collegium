@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 const eventSchema = new mongoose.Schema(
   {
     // Basic Info
-    title: { type: String, required: true },
-    description: { type: String },
+    title: { type: String, required: true, trim: true },
+    description: { type: String, trim: true },
 
     // Dates & Duration
     startDate: { type: Date, required: true },
@@ -13,38 +13,39 @@ const eventSchema = new mongoose.Schema(
 
     // Online / Offline
     medium: { type: String, enum: ["online", "offline"], default: "offline" },
-    meet: [String], // Meeting links (for online)
-    location: [String], // Venue or coordinates (for offline)
+    meet: [String],
+    location: [String],
 
     // Visual
-    image: { type: String }, // Cover image URL
+    image: { type: String },
 
     // RSVP & Attendance
     acceptingRsvp: { type: Boolean, default: true },
     acceptingAttendance: { type: Boolean, default: false },
 
     // Capacity & Access
-    maxParticipants: { type: Number },
+    maxParticipants: { type: Number},
     privacy: { type: String, enum: ["public", "private"], default: "public" },
 
     // Organiser Info
-    isExternalOrganiser: { type: Boolean, default: false },
     organiser: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-    externalOrganiserInfo: {
-      name: { type: String },
-      email: { type: String },
-      phone: { type: String },
-      organisation: { type: String }, // Optional
+      name: { type: String, required: true, trim: true },
+      email: {
+        type: String,
+        required: true,
+        trim: true,
+        match: [/^\S+@\S+\.\S+$/, "Please provide a valid email"],
+      },
+      phone: {
+        type: String,
+        required: true,
+        trim: true,
+        match: [/^\d{10}$/, "Please provide a valid 10-digit phone number"],
+      },
     },
 
     // Club / Department
-    club: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Club",
-    },
+    club: { type: mongoose.Schema.Types.ObjectId, ref: "Club" },
 
     // Registration & Payment
     price: { type: Number, default: 0 },
@@ -52,21 +53,23 @@ const eventSchema = new mongoose.Schema(
     registeredUsers: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        paymentId: { type: String }, // <-- new
         paymentStatus: {
           type: String,
-          enum: ["pending", "completed"],
+          enum: ["pending", "completed", "refunded"],
           default: "pending",
         },
         qrCode: { type: String },
         registeredAt: { type: Date, default: Date.now },
       },
     ],
+    
 
     // Meta
-    category: { type: String },
-    language: { type: String },
-    tnc: { type: String }, // Terms and Conditions
-    adminNotes: { type: String },
+    category: { type: String, trim: true },
+    language: { type: String, trim: true },
+    tnc: { type: String, trim: true },
+    adminNotes: { type: String, trim: true },
 
     // Waitlist & Feedback
     waitlist: [
@@ -97,24 +100,58 @@ const eventSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
-// ✅ Organiser Validation
-eventSchema.pre("validate", function (next) {
-  if (this.isExternalOrganiser) {
-    const info = this.externalOrganiserInfo || {};
-    if (!info.name || !info.email || !info.phone) {
-      return next(
-        new Error("External organiser must have name, email, and phone.")
-      );
-    }
-  } else {
-    if (!this.organiser) {
-      return next(new Error("Internal organiser (User) is required."));
-    }
+// ✅ Virtual: isPaid
+eventSchema.virtual("isPaid").get(function () {
+  return this.price > 0;
+});
+
+// ✅ Pre-save: validate endDate >= startDate
+eventSchema.pre("save", function (next) {
+  if (this.endDate && this.endDate < this.startDate) {
+    return next(new Error("End date cannot be before start date."));
+  }
+  updateStatus(this);
+  next();
+});
+
+// ✅ Pre-update: also auto-set status
+eventSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+  if (update.startDate || update.endDate) {
+    updateStatus(update);
+    this.setUpdate(update);
   }
   next();
 });
+
+// ✅ Auto status updater
+function updateStatus(event) {
+  const now = new Date();
+  if (event.status !== "cancelled") {
+    if (event.startDate && event.endDate) {
+      if (now < event.startDate) event.status = "upcoming";
+      else if (now >= event.startDate && now <= event.endDate)
+        event.status = "ongoing";
+      else if (now > event.endDate) event.status = "completed";
+    }
+  }
+}
+
+// ✅ Indexes
+eventSchema.index({ startDate: 1 });
+eventSchema.index({ status: 1 });
+eventSchema.index({ club: 1 });
+eventSchema.index({ title: 1, club: 1 }, { unique: true });
+
+// ❗ Optional: TTL for auto-deletion of past events
+// Uncomment if you want MongoDB to auto-delete completed events X days after endDate
+// eventSchema.index({ endDate: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 30 }); // 30 days
 
 export const Event = mongoose.model("Event", eventSchema);

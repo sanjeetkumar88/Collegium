@@ -34,7 +34,7 @@ import projectrouter from './routes/project.route.js'
 app.use('/users',userRouter) 
 app.use('/notes',notesRouter) 
 app.use('/club',clubrouter)
-app.use('/event',eventrouter)
+app.use('/devevent',eventrouter)
 app.use('/devproject',projectrouter)
 
 

@@ -1,129 +1,353 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaCamera } from "react-icons/fa";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/Authcontext";
+import { toast } from "react-toastify"; // Import toast
 
-const CreateEventForm = () => {
-  const [form, setForm] = useState({
+export default function EventCreateForm() {
+  const [imageFile, setImageFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [userClubs, setUserClubs] = useState([]);
+  const [isLeader, setIsLeader] = useState(false);
+  const [formData, setFormData] = useState({
+    clubId: "",
     title: "",
     description: "",
-    startDate: "",
-    endDate: "",
-    duration: "",
-    medium: "offline",
-    meet: ["", ""],
-    location: ["", "", ""],
-    image: "",
-    acceptingRsvp: true,
-    acceptingAttendance: false,
-    maxParticipants: 0,
-    privacy: "public",
-    isExternalOrganiser: false,
-    organiser: "",
-    externalOrganiserInfo: {
-      name: "",
-      email: "",
-      phone: "",
-      organisation: "",
-    },
-    club: "",
-    invitedUsers: [],
-    price: 0,
     category: "",
+    status: "upcoming",
+    startDateTime: "",
+    endDateTime: "",
+    duration: "",
+    acceptingRsvp: false,
+    acceptingAttendance: false,
+    maxParticipants: "",
+    privacy: "public",
+    organiserName: "",
+    organiserEmail: "",
+    organiserPhone: "",
+    price: "",
     language: "",
     tnc: "",
     adminNotes: "",
-    createdBy: "", // Fill this with logged-in user ID
+    medium: "online",
+    meet: ["", "", ""],
+    location: ["", "", ""],
   });
+
+  const categories = [
+    "Sports", "DSA", "MERN", "Cybersecurity", "JAVA Developer", "AI", "Data Science"
+  ];
+
+  const [loading, setLoading] = useState(false); // Add loading state
+  const navigate = useNavigate();
+  const user = useAuth();
+
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try {
+        const { data } = await axios.get("/club/mine");
+        setUserClubs(data.clubs);
+        if (data.clubs.length > 0) {
+          setIsLeader(true);
+        }
+      } catch (err) {
+        console.error("Error fetching user clubs", err);
+      }
+    };
+    fetchClubs();
+
+    if (user.authUser.role === "student" && !isLeader) {
+      navigate("/unauthorized");
+    }
+  }, [user, isLeader, navigate]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImageFile(file);
+    if (file) setPreview(URL.createObjectURL(file));
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    if (name.includes("externalOrganiserInfo.")) {
-      const key = name.split(".")[1];
-      setForm((prev) => ({
-        ...prev,
-        externalOrganiserInfo: {
-          ...prev.externalOrganiserInfo,
-          [key]: value,
-        },
-      }));
-    } else {
-      setForm((prev) => ({
-        ...prev,
-        [name]: type === "checkbox" ? checked : value,
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleArrayChange = (index, value, arrayName) => {
+    const updated = [...formData[arrayName]];
+    updated[index] = value;
+    setFormData((prev) => ({ ...prev, [arrayName]: updated }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setLoading(true); // Set loading to true when submission starts
+    const payload = new FormData();
+
+    Object.entries(formData).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((item, i) => payload.append(`${key}[${i}]`, item));
+      } else {
+        payload.append(key, value);
+      }
+    });
+
+    if (imageFile) payload.append("image", imageFile);
+
     try {
-      const response = await axios.post("/event/createevent", form);
-      alert("Event created successfully");
-      console.log(response.data);
+      const { data } = await axios.post("/devevent/createevent", payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      // On success, show a success toast and reset the form
+      toast.success("Event created successfully!");
+      resetForm();
     } catch (err) {
-      console.error(err);
-      alert("Error creating event");
+      console.error("Event creation error:", err.response?.data || err.message);
+      // On error, show an error toast
+      toast.error("Failed to create event. Please try again.");
+    } finally {
+      setLoading(false); // Reset loading state after submission
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      clubId: "",
+      title: "",
+      description: "",
+      category: "",
+      status: "upcoming",
+      startDateTime: "",
+      endDateTime: "",
+      duration: "",
+      acceptingRsvp: false,
+      acceptingAttendance: false,
+      maxParticipants: "",
+      privacy: "public",
+      organiserName: "",
+      organiserEmail: "",
+      organiserPhone: "",
+      price: "",
+      language: "",
+      tnc: "",
+      adminNotes: "",
+      medium: "online",
+      meet: ["", "", ""],
+      location: ["", "", ""],
+    });
+    setImageFile(null);
+    setPreview(null);
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="p-6 max-w-2xl mx-auto space-y-4">
-      <input type="text" name="title" placeholder="Title" value={form.title} onChange={handleChange} required />
-      <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} />
-      <input type="datetime-local" name="startDate" value={form.startDate} onChange={handleChange} required />
-      <input type="datetime-local" name="endDate" value={form.endDate} onChange={handleChange} />
-      <input type="text" name="duration" placeholder="Duration (HH:MM)" value={form.duration} onChange={handleChange} />
-
-      <select name="medium" value={form.medium} onChange={handleChange}>
-        <option value="offline">Offline</option>
-        <option value="online">Online</option>
-      </select>
-
-      {form.medium === "online" && (
-        <>
-          <input type="text" placeholder="Meeting Link" value={form.meet[0]} onChange={(e) => setForm({...form, meet: [e.target.value, form.meet[1]]})} />
-          <input type="text" placeholder="Meeting Password" value={form.meet[1]} onChange={(e) => setForm({...form, meet: [form.meet[0], e.target.value]})} />
-        </>
+    <motion.form
+      onSubmit={handleSubmit}
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-3xl mx-auto p-6 space-y-6 text-black bg-white rounded-lg shadow-md"
+    >
+      {/* Club Selector */}
+      {userClubs.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium mb-1">Organising Club *</label>
+          <select
+            name="clubId"
+            value={formData.clubId}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded"
+            required
+          >
+            <option value="">Select Club</option>
+            {userClubs.map((club) => (
+              <option key={club._id} value={club._id}>
+                {club.name}
+              </option>
+            ))}
+          </select>
+        </div>
       )}
 
-      {form.medium === "offline" && (
-        <>
-          <input type="text" placeholder="Venue" value={form.location[0]} onChange={(e) => setForm({...form, location: [e.target.value, form.location[1], form.location[2]]})} />
-          <input type="text" placeholder="Latitude" value={form.location[1]} onChange={(e) => setForm({...form, location: [form.location[0], e.target.value, form.location[2]]})} />
-          <input type="text" placeholder="Longitude" value={form.location[2]} onChange={(e) => setForm({...form, location: [form.location[0], form.location[1], e.target.value]})} />
-        </>
-      )}
-
-      <input type="text" name="image" placeholder="Image URL" value={form.image} onChange={handleChange} />
-      <input type="number" name="maxParticipants" placeholder="Max Participants" value={form.maxParticipants} onChange={handleChange} />
- 
-      <input type="number" name="price" placeholder="Price" value={form.price} onChange={handleChange} />
-      <input type="text" name="category" placeholder="Category" value={form.category} onChange={handleChange} />
-      <input type="text" name="language" placeholder="Language" value={form.language} onChange={handleChange} />
-      <textarea name="tnc" placeholder="Terms and Conditions" value={form.tnc} onChange={handleChange} />
-      <textarea name="adminNotes" placeholder="Admin Notes" value={form.adminNotes} onChange={handleChange} />
-
-      <label>
-        <input type="checkbox" name="isExternalOrganiser" checked={form.isExternalOrganiser} onChange={handleChange} /> External Organiser
+      {/* Image Upload */}
+      <label className="block border-2 border-dashed border-blue-400 rounded-lg h-64 flex flex-col justify-center items-center cursor-pointer relative overflow-hidden bg-gray-50 hover:bg-blue-50 transition">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
+        {preview ? (
+          <img
+            src={preview}
+            alt="Preview"
+            className="object-cover w-full h-full rounded-lg"
+          />
+        ) : (
+          <div className="text-center text-gray-500 flex flex-col items-center gap-2">
+            <FaCamera className="text-3xl" />
+            <p>Click to upload event image</p>
+          </div>
+        )}
       </label>
 
-      {form.isExternalOrganiser ? (
-        <>
-          <input type="text" name="externalOrganiserInfo.name" placeholder="Organiser Name" value={form.externalOrganiserInfo.name} onChange={handleChange} />
-          <input type="email" name="externalOrganiserInfo.email" placeholder="Organiser Email" value={form.externalOrganiserInfo.email} onChange={handleChange} />
-          <input type="text" name="externalOrganiserInfo.phone" placeholder="Organiser Phone" value={form.externalOrganiserInfo.phone} onChange={handleChange} />
-          <input type="text" name="externalOrganiserInfo.organisation" placeholder="Organisation" value={form.externalOrganiserInfo.organisation} onChange={handleChange} />
-        </>
-      ) : (
-        <input type="text" name="organiser" placeholder="Organiser User ID" value={form.organiser} onChange={handleChange} />
-      )}
+      {/* Input Fields */}
+      {[["title", "Event Title *"], ["description", "Description *", "textarea"], ["startDateTime", "Start Date & Time *", "datetime-local"], ["endDateTime", "End Date & Time *", "datetime-local"], ["duration", "Duration (HH:MM) *", "text"], ["maxParticipants", "Max Participants", "number"], ["organiserName", "Organiser Name *"], ["organiserEmail", "Organiser Email *", "email"], ["organiserPhone", "Organiser Phone*", "tel"], ["price", "Price", "number"], ["language", "Language"], ["tnc", "Terms & Conditions", "textarea"], ["adminNotes", "Admin Notes", "textarea"]].map(([name, label, type = "text"]) => (
+        <div key={name}>
+          <label className="block text-sm font-medium mb-1">{label}</label>
+          {type === "textarea" ? (
+            <textarea
+              name={name}
+              onChange={handleChange}
+              value={formData[name]}
+              required={label.includes("*")}
+              className="w-full px-4 py-2 border border-gray-300 rounded"
+            />
+          ) : (
+            <input
+              type={type}
+              name={name}
+              onChange={handleChange}
+              value={formData[name]}
+              required={label.includes("*")}
+              className="w-full px-4 py-2 border border-gray-300 rounded"
+            />
+          )}
+        </div>
+      ))}
+      <div>
+  <label className="block text-sm font-medium mb-1">Category *</label>
+  <select
+    name="category"
+    value={formData.category}
+    onChange={handleChange}
+    required
+    className="w-full px-4 py-2 border border-gray-300 rounded"
+  >
+    <option value="">Select Category</option>
+    {categories.map((category, i) => (
+      <option key={i} value={category}>
+        {category}
+      </option>
+    ))}
+  </select>
+</div>
 
-      <input type="text" name="club" placeholder="Club ID (optional)" value={form.club} onChange={handleChange} />
+      {/* Privacy Select */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Privacy</label>
+        <select
+          name="privacy"
+          value={formData.privacy}
+          onChange={handleChange}
+          className="w-full px-4 py-2 border border-gray-300 rounded"
+        >
+          <option value="public">Public</option>
+          <option value="private">Private</option>
+        </select>
+      </div>
 
-      <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-        Create Event
-      </button>
-    </form>
+      {/* RSVP and Attendance */}
+      <div className="flex flex-wrap items-center gap-4">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            name="acceptingRsvp"
+            checked={formData.acceptingRsvp}
+            onChange={handleChange}
+          />
+          Accepting RSVP
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            name="acceptingAttendance"
+            checked={formData.acceptingAttendance}
+            onChange={handleChange}
+          />
+          Accepting Attendance
+        </label>
+      </div>
+
+      {/* Medium Selector */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Medium</label>
+        <select
+          name="medium"
+          value={formData.medium}
+          onChange={handleChange}
+          className="w-full px-4 py-2 border border-gray-300 rounded"
+        >
+          <option value="online">Online</option>
+          <option value="offline">Offline</option>
+        </select>
+      </div>
+
+      {/* Meet or Location Section */}
+      <AnimatePresence mode="wait">
+        {formData.medium === "online" ? (
+          <motion.div
+            key="meet"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.3 }}
+          >
+            {["Meet Link", "Meet ID", "Meet Password"].map((label, i) => (
+              <div key={i}>
+                <label className="block text-sm font-medium mb-1">{label}*</label>
+                <input
+                  type="text"
+                  value={formData.meet[i]}
+                  required
+                  onChange={(e) =>
+                    handleArrayChange(i, e.target.value, "meet")
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded"
+                />
+              </div>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="location"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.3 }}
+          >
+            {["Venue", "Latitude", "Longitude"].map((label, i) => (
+              <div key={i}>
+                <label className="block text-sm font-medium mb-1">{label}*</label>
+                <input
+                  type="text"
+                  value={formData.location[i]}
+                  onChange={(e) =>
+                    handleArrayChange(i, e.target.value, "location")
+                  }
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded"
+                />
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        type="submit"
+        disabled={loading} // Disable button when loading
+        className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded text-white font-semibold w-full"
+      >
+        {loading ? "Creating Event..." : "Create Event"} {/* Show loading text */}
+      </motion.button>
+    </motion.form>
   );
-};
-
-export default CreateEventForm;
+}

@@ -1,201 +1,244 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
-import moment from 'moment';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-
-// Create the localizer directly (no need for useState)
-const localizer = momentLocalizer(moment);
-
-// Example events
-const initialEvents = [
-  {
-    id: 1,
-    title: "React Developer Conference",
-    start: new Date(2025, 1, 16, 10, 0), // February 16, 2025 10:00 AM
-    end: new Date(2025, 1, 17, 16, 0), // February 17, 2025 4:00 PM
-    location: "Online",
-  },
-  { 
-    id: 2, 
-    title: "JavaScript Meetup",
-    start: new Date(2025, 3, 20, 14, 0), // April 20, 2025 2:00 PM
-    end: new Date(2025, 3, 20, 18, 0), // April 20, 2025 6:00 PM
-    location: "New York, USA",
-  },
-  {
-    id: 3,
-    title: "Frontend Dev Workshop",
-    start: new Date(2024, 4, 10, 9, 0), // May 10, 2025 9:00 AM
-    end: new Date(2024, 4, 10, 12, 0), // May 10, 2025 12:00 PM
-    location: "San Francisco, USA",
-  },
-];
-
-const isEventPast = (eventEnd) => {
-  const now = new Date();
-  return eventEnd < now;
-};
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { motion } from "framer-motion";
+import { Select, Button, Chip, Pagination } from "@mantine/core";
+import { FiFilter } from "react-icons/fi";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import EventCard from "../Cardcomp/EventCard";
+import { useAuth } from "../../context/Authcontext";
 
 function Events() {
-  const [events, setEvents] = useState(initialEvents);
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [pastEvents, setPastEvents] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showAddEventForm, setShowAddEventForm] = useState(false);
-  const [newEvent, setNewEvent] = useState({
-    title: '',
-    start: '',
-    end: '',
-    location: ''
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Function to separate events into upcoming and past
-  const filterEvents = () => {
-    const upcoming = [];
-    const past = [];
-    
-    events.forEach(event => {
-      if (isEventPast(event.end)) {
-        past.push(event);
-      } else {
-        upcoming.push(event);
+  // States initialized from URL
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
+  const [selectedType, setSelectedType] = useState(searchParams.get("privacy") || "");
+  const [selectedMembership, setSelectedMembership] = useState(searchParams.get("membership") || "");
+  const [selectedMode, setSelectedMode] = useState(searchParams.get("mode") || "");
+  const [search, setSearch] = useState(searchParams.get("search") || "");
+  const [showFilters, setShowFilters] = useState(false);
+  const [events, setEvents] = useState([]);
+  const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 6;
+  const user = useAuth();
+  const navigate = useNavigate();
+
+  const categories = [
+    "Sports", "DSA", "MERN", "Cybersecurity", "JAVA Developer", "AI", "Data Science"
+  ];
+
+  const typeOptions = [
+    { label: "All Upcoming Events", value: "" },
+    { label: "Public", value: "public" },
+    { label: "Private", value: "private" },
+  ];
+
+  const membershipOptions = [
+    { label: "All", value: "" },
+    { label: "Joined", value: "joined" },
+    { label: "Not Joined", value: "not-joined" },
+    { label: "Requested", value: "requested" },
+  ];
+
+  const modeOptions = [
+    { label: "All Modes", value: "" },
+    { label: "Online", value: "online" },
+    { label: "Offline", value: "offline" },
+  ];
+
+  // Update URL when filters or page change
+  useEffect(() => {
+    const params = {
+      category: selectedCategory,
+      privacy: selectedType,
+      membership: selectedMembership,
+      mode: selectedMode,
+      search,
+      page,
+    };
+
+    const cleanedParams = {};
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== "" && value !== null && value !== undefined) {
+        cleanedParams[key] = value;
       }
     });
-    
-    setUpcomingEvents(upcoming);
-    setPastEvents(past);
-  };
 
-  // Filter events based on the search query
-  const handleSearch = () => {
-    const filteredEvents = events.filter((event) => 
-      event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      event.location.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setUpcomingEvents(filteredEvents.filter(event => !isEventPast(event.end)));
-    setPastEvents(filteredEvents.filter(event => isEventPast(event.end)));
-  };
-
-  // Handle form input change
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewEvent({
-      ...newEvent,
-      [name]: value
-    });
-  };
-
-  // Handle form submission to add new event
-  const handleAddEvent = (e) => {
-    e.preventDefault();
-    const event = {
-      id: events.length + 1,
-      ...newEvent,
-      start: new Date(newEvent.start),
-      end: new Date(newEvent.end)
-    };
-    setEvents([...events, event]);
-    setShowAddEventForm(false);
-    filterEvents();
-  };
+    setSearchParams(cleanedParams);
+  }, [selectedCategory, selectedType, selectedMembership, selectedMode, search, page]);
 
   useEffect(() => {
-    filterEvents();
-  }, [events]);
+    const fetchEvents = async () => {
+      try {
+        const res = await axios.get("/devevent/getAllEvents", {
+          params: {
+            title: search,
+            category: selectedCategory,
+            privacy: selectedType,
+            medium: selectedMode,
+            participationStatus: selectedMembership,
+            page,
+            limit,
+          },
+        });
+
+        setEvents(res.data.data || []);
+        setTotalPages(res.data.totalPages || 1);
+      } catch (err) {
+        console.error("Failed to fetch events:", err);
+      }
+    };
+
+    fetchEvents();
+  }, [search, selectedCategory, selectedType, selectedMode, selectedMembership, page]);
 
   return (
-    <div className="flex flex-col lg:flex-row">
-      {/* Calendar Section */}
-      <div className="calendar-container p-4 w-full lg:w-3/4">
-        <h1 className="text-2xl font-bold mb-4">Events Calendar</h1>
-        <div>
-          <Calendar
-            localizer={localizer}
-            events={events}
-            defaultView="month"
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: 800 }}
-          />
-        </div>
-      </div>
+    <div className="p-6">
+      {(user.authUser?.role === "admin" || user.authUser?.role === "teacher") && (
+  <div className="flex justify-end mb-4">
+    <Button
+      onClick={() => navigate("/events/createevent")}
+      variant="filled"
+      color="blue"
+      radius="md"
+    >
+      + Create Event
+    </Button>
+  </div>
+)}
 
-      {/* Events List Section */}
-      <div className="events-list p-4 w-full lg:w-1/4 mt-8 lg:mt-0">
-      
-        <div className="mb-8 flex justify-between">
-          <h2 className="text-xl font-bold mb-4">Upcoming Events</h2>
-          <div>
-            
-          </div>
-        </div>
+      {/* Page Heading */}
+      <motion.h1 className="text-5xl font-bold text-center text-gray-800 drop-shadow-sm tracking-wide mb-8"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+      >
+        Discover Events
+      </motion.h1>
 
-        {/* Search Events */}
-        <div className="mb-4">
-          <input
-            type="text"
-            className="p-2 border rounded-lg"
-            placeholder="Search events..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <button
-            onClick={handleSearch}
-            className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-lg cursor-pointer"
-          >
-            Search
-          </button>
-        </div>
+      {/* Filter Row */}
+      <motion.div className="flex flex-wrap justify-center items-center gap-4 text-center mb-6"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <Select
+          placeholder="Select club type"
+          value={selectedType}
+          data={typeOptions}
+          w={180}
+          styles={{ input: { borderRadius: "8px" } }}
+          onChange={setSelectedType}
+        />
 
-        
-
-        {/* Display Upcoming Events */}
-        <div>
-          {upcomingEvents.map((event) => (
-            <div key={event.id} className="mb-4 border p-4 rounded-lg shadow-sm">
-              <h3 className="font-semibold">{event.title}</h3>
-              <p>{event.location}</p>
-              <p>{moment(event.start).format('MMMM Do YYYY, h:mm a')} - {moment(event.end).format('h:mm a')}</p>
-              <div className="flex space-x-4 mt-2">
-                <button
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-400 cursor-pointer"
-                  disabled={isEventPast(event.end)}
+        {/* Category Chips */}
+        <div className="flex justify-center flex-1 min-w-[200px] overflow-x-auto whitespace-nowrap scrollbar-hide items-center">
+          <div className="flex gap-3 w-max justify-center">
+            {categories.map((cat, i) => (
+              <motion.div key={cat}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <Chip
+                  checked={selectedCategory === cat}
+                  onChange={() =>
+                    setSelectedCategory(selectedCategory === cat ? "" : cat)
+                  }
+                  variant="light"
+                  radius="md"
                 >
-                  {isEventPast(event.end) ? "Registration Closed" : "Register"}
-                </button>
-                <button className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-400 cursor-pointer">
-                  Details
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Display Past Events */}
-        <div>
-          <h2 className="text-xl font-bold mb-4">Past Events</h2>
-          <div>
-            {pastEvents.map((event) => (
-              <div key={event.id} className="mb-4 border p-4 rounded-lg shadow-sm">
-                <h3 className="font-semibold">{event.title}</h3>
-                <p>{event.location}</p>
-                <p>{moment(event.start).format('MMMM Do YYYY, h:mm a')} - {moment(event.end).format('h:mm a')}</p>
-                <div className="flex space-x-4 mt-2">
-                  <button
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-400 cursor-pointer"
-                    disabled
-                  >
-                    Registration Closed
-                  </button>
-                  <button className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-400 cursor-pointer">
-                    Details
-                  </button>
-                </div>
-              </div>
+                  {cat}
+                </Chip>
+              </motion.div>
             ))}
           </div>
         </div>
+
+        <Button
+          leftSection={<FiFilter size={16} />}
+          onClick={() => setShowFilters(!showFilters)}
+          variant="light"
+          color="blue"
+        >
+          Filters
+        </Button>
+      </motion.div>
+
+      {/* Additional Filters */}
+      {showFilters && (
+        <motion.div className="mt-4 flex flex-wrap justify-center gap-4 mb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Select
+            placeholder="Mode"
+            value={selectedMode}
+            data={modeOptions}
+            w={180}
+            styles={{ input: { borderRadius: "8px" } }}
+            onChange={setSelectedMode}
+          />
+
+          <input
+            type="text"
+            value={search}
+            placeholder="Search by Name"
+            className="w-full md:w-80 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          <Select
+            placeholder="Membership"
+            value={selectedMembership}
+            data={membershipOptions}
+            w={180}
+            styles={{ input: { borderRadius: "8px" } }}
+            onChange={setSelectedMembership}
+          />
+        </motion.div>
+      )}
+
+      {/* Event Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {events.length === 0 ? (
+          <motion.p className="text-center col-span-full text-gray-500 mt-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            No events found.
+          </motion.p>
+        ) : (
+          events.map((event, i) => (
+            <motion.div key={event._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+            >
+              <EventCard
+                imageUrl={event.image}
+                date={event.startDate}
+                category={event.category}
+                title={event.title}
+                id={event._id}
+              />
+            </motion.div>
+          ))
+        )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <motion.div className="pt-8 flex justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Pagination value={page} onChange={setPage} total={totalPages} />
+        </motion.div>
+      )}
     </div>
   );
 }
