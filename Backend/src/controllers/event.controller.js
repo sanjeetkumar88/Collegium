@@ -188,6 +188,7 @@ const getAllEvents = async (req, res) => {
       participationStatus,
       page = 1,
       limit = 10,
+
     } = req.query;
 
     const userId = req.user?._id;
@@ -304,21 +305,20 @@ const getEventDetail = asyncHandler(async (req, res) => {
   const eventId = req.params.id;
   
 
-  // Check if eventId is a valid ObjectId (if you're using MongoDB with Mongoose)
+  
   if (!eventId.match(/^[0-9a-fA-F]{24}$/)) {
     return res.status(400).json({ message: "Invalid event ID" });
   }
 
   try {
-    // Find the event and populate the createdBy field with selected user details
+    
     const event = await Event.findById(eventId).populate("createdBy", "name email _id");
 
-    // If the event is not found, return a 404 error
+    
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    // Respond with the event details
 
     
     
@@ -567,6 +567,690 @@ export const registerUser = async (req, res) => {
     return res.status(500).json({ message: "Internal server error." });
   }
 };
+
+export const registerUserWithPayment = async (req, res) => {
+  const eventId = req.params.id;
+  const userId = req.user._id;
+  const { paymentId, paymentStatus } = req.body;
+
+  try {
+    const event = await Event.findById(eventId);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (!event.acceptingRsvp) {
+      return res.status(400).json({ message: "RSVP is closed for this event." });
+    }
+
+    if (!event.price || event.price === 0) {
+      return res.status(400).json({ message: "This event is free. Use the free registration route." });
+    }
+
+    const alreadyRegistered = event.registeredUsers.some(
+      (entry) => entry.user.toString() === userId.toString()
+    );
+    if (alreadyRegistered) {
+      return res.status(400).json({ message: "User already registered." });
+    }
+
+    const alreadyWaitlisted = event.waitlist.some(
+      (entry) => entry.user.toString() === userId.toString()
+    );
+    if (alreadyWaitlisted) {
+      return res.status(400).json({ message: "User already in waitlist." });
+    }
+
+    const isUnlimited = event.maxParticipants == null;
+    const hasSpace = isUnlimited || event.registeredUsers.length < event.maxParticipants;
+
+    if (!hasSpace) {
+      return res.status(400).json({ message: "Event is full. Cannot register." });
+    }
+
+    if (paymentStatus !== "completed") {
+      return res.status(400).json({ message: "Payment not completed." });
+    }
+
+    const qrCode = event.acceptingAttendance
+      ? await generateQrCode(userId, event._id)
+      : null;
+
+    event.registeredUsers.push({
+      user: userId,
+      paymentId,
+      paymentStatus,
+      qrCode,
+      registeredAt: new Date(),
+    });
+
+    await event.save();
+
+    return res.status(200).json({
+      message: "User successfully registered with payment.",
+      status: "registered",
+    });
+  } catch (error) {
+    console.error("Error registering user with payment:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+export const dashboard = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const now = new Date();
+
+    const result = await Event.aggregate([
+      {
+        $match: {
+          createdBy: userId,
+           
+        }
+      },
+      {
+        $facet: {
+          total: [{ $count: "count" }],
+          private: [
+            { $match: { privacy: "private" } },
+            { $count: "count" }
+          ],
+          public: [
+            { $match: { privacy: "public" } },
+            { $count: "count" }
+          ],
+          online: [
+            { $match: { medium: "online" } },
+            { $count: "count" }
+          ],
+          offline: [
+            { $match: { medium: "offline" } },
+            { $count: "count" }
+          ]
+        }
+      }
+    ]);
+
+    const data = result[0];
+
+    const response = {
+      total: data.total[0]?.count || 0,
+      private: data.private[0]?.count || 0,
+      public: data.public[0]?.count || 0,
+      online: data.online[0]?.count || 0,
+      offline: data.offline[0]?.count || 0,
+    };
+
+    res.status(200).json(response);
+
+  } catch (error) {
+    console.error("Error in fetching data", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
+
+export const getCreatedEvent = asyncHandler(async (req, res) => {
+  try {
+    const {
+      title = "",
+      category,
+      privacy,
+      medium,
+      status, // "upcoming" | "ongoing" | "completed"
+      page = 1,
+      limit = 10,
+    } = req.query;
+
+    const userId = req.user?._id;
+    const now = new Date();
+    const skip = (page - 1) * limit;
+
+    // Base filters
+    const filters = {
+      ...(title && { title: { $regex: title, $options: "i" } }),
+      ...(category && { category }),
+      ...(privacy && { privacy }),
+      ...(medium && { medium }),
+      ...(userId && { createdBy: userId }),
+    };
+
+    const pipeline = [
+      { $match: filters },
+
+      // Compute event status dynamically
+      {
+        $addFields: {
+          status: {
+            $switch: {
+              branches: [
+                { case: { $gt: ["$startDate", now] }, then: "upcoming" },
+                {
+                  case: {
+                    $and: [
+                      { $lte: ["$startDate", now] },
+                      { $gte: ["$endDate", now] },
+                    ],
+                  },
+                  then: "ongoing",
+                },
+              ],
+              default: "completed",
+            },
+          },
+        },
+      },
+
+      // Optional status filter
+      ...(status ? [{ $match: { status } }] : []),
+
+      // Project only required fields
+      {
+        $project: {
+          title: 1,
+          image: 1,
+          startDate: 1,
+          endDate: 1,
+          category: 1,
+          status: 1,
+        },
+      },
+
+      { $sort: { startDate: 1 } },
+      { $skip: parseInt(skip) },
+      { $limit: parseInt(limit) },
+    ];
+
+    const events = await Event.aggregate(pipeline);
+
+    // Total count for pagination
+    const countPipeline = pipeline.filter(stage => !stage.$skip && !stage.$limit);
+    countPipeline.push({ $count: "total" });
+    const totalResult = await Event.aggregate(countPipeline);
+    const total = totalResult[0]?.total || 0;
+
+    res.json({
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total,
+      totalPages: Math.ceil(total / limit),
+      data: events,
+    });
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+export const getRsvps = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      title = "",
+    } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    const events = await Event.aggregate([
+      {
+        $match: {
+          createdBy: new mongoose.Types.ObjectId(userId),
+          title: { $regex: title, $options: "i" },
+        }
+      },
+      {
+        $project: {
+          title: 1,
+          startDate: 1,
+          endDate: 1,
+          registeredCount: { $size: { $ifNull: ["$registeredUsers", []] } }
+        }
+      },
+      { $sort: { startDate: -1 } },
+      { $skip: parseInt(skip) },
+      { $limit: parseInt(limit) }
+    ]);
+
+    const totalResult = await Event.aggregate([
+      {
+        $match: {
+          createdBy: new mongoose.Types.ObjectId(userId),
+          title: { $regex: title, $options: "i" },
+        }
+      },
+      { $count: "total" }
+    ]);
+
+    const total = totalResult[0]?.total || 0;
+
+    res.status(200).json({
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total,
+      totalPages: Math.ceil(total / limit),
+      data: events
+    });
+
+  } catch (error) {
+    console.error("Error fetching RSVP counts:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+export const getRequest = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      title = "",
+    } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    const events = await Event.aggregate([
+      {
+        $match: {
+          createdBy: new mongoose.Types.ObjectId(userId),
+          title: { $regex: title, $options: "i" },
+        }
+      },
+      {
+        $project: {
+          title: 1,
+          startDate: 1,
+          endDate: 1,
+          requestCount: { $size: { $ifNull: ["$waitlist", []] } }
+        }
+      },
+      { $sort: { startDate: -1 } },
+      { $skip: parseInt(skip) },
+      { $limit: parseInt(limit) }
+    ]);
+
+    const totalResult = await Event.aggregate([
+      {
+        $match: {
+          createdBy: new mongoose.Types.ObjectId(userId),
+          title: { $regex: title, $options: "i" },
+        }
+      },
+      { $count: "total" }
+    ]);
+
+    const total = totalResult[0]?.total || 0;
+
+    res.status(200).json({
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total,
+      totalPages: Math.ceil(total / limit),
+      data: events
+    });
+
+  } catch (error) {
+    console.error("Error fetching RSVP counts:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+export const getRegisteredUsers = asyncHandler(async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const userId = req.user._id;
+    const userRole = req.user.role;
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: "Invalid event ID" });
+    }
+
+    const event = await Event.findById(eventId)
+      .populate("registeredUsers.user", "fullName username email avatar")
+      .lean();
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const isCreator = event.createdBy?.toString() === userId.toString();
+    const isAdmin = userRole === "admin";
+
+    if (!isCreator && !isAdmin) {
+      return res.status(403).json({ message: "Access denied. Only the event creator or an admin can view registered users." });
+    }
+
+    const users = event.registeredUsers.map(({ user }) => ({
+      fullName: user.fullName,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+    }));
+
+    res.status(200).json({ users });
+  } catch (error) {
+    console.error("Error fetching registered users:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// DOWNLOAD Registered Users XLS
+export const downloadRegisteredUsersXLS = asyncHandler(async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const userId = req.user._id;
+    const userRole = req.user.role;
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: "Invalid event ID" });
+    }
+
+    const event = await Event.findById(eventId)
+      .populate("registeredUsers.user", "fullName username email")
+      .lean();
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const isCreator = event.createdBy?.toString() === userId.toString();
+    const isAdmin = userRole === "admin";
+
+    if (!isCreator && !isAdmin) {
+      return res.status(403).json({ message: "Access denied. Only the event creator or an admin can download this list." });
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Registered Users");
+
+    worksheet.columns = [
+      { header: "Full Name", key: "fullName", width: 25 },
+      { header: "Username", key: "username", width: 20 },
+      { header: "Email", key: "email", width: 30 },
+    ];
+
+    event.registeredUsers.forEach(({ user }) => {
+      worksheet.addRow({
+        fullName: user.fullName,
+        username: user.username,
+        email: user.email,
+      });
+    });
+
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename=registered_users_${eventId}.xlsx`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Error downloading registered users XLS:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// GET Waitlisted Users
+export const getWaitlistedUsers = asyncHandler(async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const userId = req.user._id;
+    const userRole = req.user.role;
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: "Invalid event ID" });
+    }
+
+    const event = await Event.findById(eventId)
+      .populate("waitlist.user", "fullName username email avatar")
+      .lean();
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const isCreator = event.createdBy?.toString() === userId.toString();
+    const isAdmin = userRole === "admin";
+
+    if (!isCreator && !isAdmin) {
+      return res.status(403).json({ message: "Access denied. Only the event creator or an admin can view waitlist." });
+    }
+
+    const users = event.waitlist.map(({ user }) => ({
+      fullName: user.fullName,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+    }));
+
+    res.status(200).json({ users });
+  } catch (error) {
+    console.error("Error fetching waitlisted users:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// DOWNLOAD Waitlisted Users XLS
+export const downloadWaitlistedUsersXLS = asyncHandler(async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const userId = req.user._id;
+    const userRole = req.user.role;
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: "Invalid event ID" });
+    }
+
+    const event = await Event.findById(eventId)
+      .populate("waitlist.user", "fullName username email")
+      .lean();
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const isCreator = event.createdBy?.toString() === userId.toString();
+    const isAdmin = userRole === "admin";
+
+    if (!isCreator && !isAdmin) {
+      return res.status(403).json({ message: "Access denied. Only the event creator or an admin can download this list." });
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Waitlisted Users");
+
+    worksheet.columns = [
+      { header: "Full Name", key: "fullName", width: 25 },
+      { header: "Username", key: "username", width: 20 },
+      { header: "Email", key: "email", width: 30 },
+    ];
+
+    event.waitlist.forEach(({ user }) => {
+      worksheet.addRow({
+        fullName: user.fullName,
+        username: user.username,
+        email: user.email,
+      });
+    });
+
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename=waitlisted_users_${eventId}.xlsx`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Error downloading waitlisted users XLS:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+export const updateWaitlistStatus = asyncHandler(async (req, res) => {
+  const { eventId, userId } = req.params;
+  const { action } = req.body;
+  const currentUserId = req.user._id;
+  const userRole = req.user.role;
+
+  if (!mongoose.Types.ObjectId.isValid(eventId) || !mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid event ID or user ID." });
+  }
+
+  if (!["accept", "reject"].includes(action)) {
+    return res.status(400).json({ message: "Invalid action. Must be 'accept' or 'reject'." });
+  }
+
+  const event = await Event.findById(eventId)
+    .populate("waitlist.user", "email fullName")
+    .lean();
+
+  if (!event) {
+    return res.status(404).json({ message: "Event not found." });
+  }
+
+  const isCreator = event.createdBy?.toString() === currentUserId.toString();
+  const isAdmin = userRole === "admin";
+
+  if (!isCreator && !isAdmin) {
+    return res.status(403).json({ message: "Access denied. Only the event creator or an admin can update waitlist." });
+  }
+
+  const waitlistEntry = event.waitlist.find(entry => entry.user._id.toString() === userId);
+  if (!waitlistEntry) {
+    return res.status(404).json({ message: "User not found in waitlist." });
+  }
+
+  const email = waitlistEntry.user.email;
+  const fullName = waitlistEntry.user.fullName;
+
+  try {
+    const eventToUpdate = await Event.findById(eventId);
+
+    // Remove from waitlist
+    eventToUpdate.waitlist = eventToUpdate.waitlist.filter(entry => entry.user.toString() !== userId);
+
+    if (action === "accept") {
+      eventToUpdate.registeredUsers.push({ user: userId, registeredAt: new Date() });
+
+      await eventToUpdate.save();
+
+      // Send acceptance email
+      await transporter.sendMail({
+        from: `"Event Team" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "You're In! Event Registration Confirmed",
+        html: `
+          <p>Hello ${fullName},</p>
+          <p>Congratulations! You've been moved from the waitlist to the registered participants list for the event: <strong>${event.title}</strong>.</p>
+          <p>Thank you for your patience!</p>
+        `,
+      });
+
+      return res.status(200).json({ message: "User accepted and notified via email." });
+    }
+
+    if (action === "reject") {
+      await eventToUpdate.save();
+
+      // Send rejection email
+      await transporter.sendMail({
+        from: `"Event Team" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Event Waitlist Update",
+        html: `
+          <p>Hello ${fullName},</p>
+          <p>Unfortunately, your waitlist request for the event <strong>${event.title}</strong> was not approved.</p>
+          <p>We hope to see you in a future event.</p>
+        `,
+      });
+
+      return res.status(200).json({ message: "User rejected and notified via email." });
+    }
+
+  } catch (err) {
+    console.error("Error processing waitlist update:", err);
+    return res.status(500).json({ message: "An error occurred while processing the request." });
+  }
+});
+
+export const downloadEventSummaryXLS = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    // Fetch event with creator field
+    const event = await Event.findById(eventId)
+      .populate("registeredUsers.userId", "name email")
+      .populate("waitlistedUsers.userId", "name email")
+      .populate("createdBy", "_id"); // ensure createdBy is accessible
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    // Authorization check
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    if (userRole !== "admin" && String(event.createdBy?._id) !== userId) {
+      return res.status(403).json({ message: "Unauthorized to download summary" });
+    }
+
+    const ExcelJS = await import("exceljs"); // dynamic import for ESM compatibility
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Event Summary");
+
+    // Title
+    worksheet.addRow([`Event Summary: ${event.title}`]);
+    worksheet.addRow([]);
+
+    // Stats
+    worksheet.addRow(["Total Registered Users", event.registeredUsers.length]);
+    worksheet.addRow(["Total Waitlisted Users", event.waitlistedUsers.length]);
+    worksheet.addRow(["Max Capacity", event.maxCapacity || "N/A"]);
+    worksheet.addRow(["Date", event.date?.toDateString() || "N/A"]);
+    worksheet.addRow([]);
+
+    // Registered Users
+    worksheet.addRow(["Registered Users"]);
+    worksheet.addRow(["Name", "Email"]);
+    event.registeredUsers.forEach((entry) => {
+      const user = entry.userId;
+      worksheet.addRow([user?.name || "N/A", user?.email || "N/A"]);
+    });
+
+    // Waitlisted Users
+    worksheet.addRow([]);
+    worksheet.addRow(["Waitlisted Users"]);
+    worksheet.addRow(["Name", "Email"]);
+    event.waitlistedUsers.forEach((entry) => {
+      const user = entry.userId;
+      worksheet.addRow([user?.name || "N/A", user?.email || "N/A"]);
+    });
+
+    worksheet.columns.forEach((col) => (col.width = 30));
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=event-summary-${event._id}.xlsx`
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    console.error("Error generating event summary XLS:", err);
+    res.status(500).json({ message: "Failed to generate event summary." });
+  }
+};
+
+
+
+
+
+
 
 
 

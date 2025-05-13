@@ -22,6 +22,9 @@ import ProjectDetail from "./components/Pages/ProjectDetail";
 import { useAuth } from "./context/AuthContext";
 import EventDetails from "./components/Pages/EventDetails";
 import EditEventForm from "./components/Pages/EditEventForm";
+import EventDashBoard from "./components/Pages/EventDashBoard";
+import EventRSVPs from "./components/Pages/EventRSVPs";
+import CreatedEvents from "./components/Pages/CreatedEvents";
 
 function App() {
   const auth = useAuth();
@@ -121,6 +124,35 @@ function App() {
               />
             }
           />
+
+          <Route 
+          path="events/dashboard"
+          element = {
+            <PrivateRoute 
+            element={<EventDashBoard />}
+            allowedRoles={["admin", "teacher", "student"]}
+            />
+          }
+          />
+          <Route 
+          path="events/createdevent"
+          element = {
+            <PrivateRoute 
+            element={<CreatedEvents />}
+            allowedRoles={["admin", "teacher", "student"]}
+            />
+          }
+          />
+
+          <Route 
+          path="events/rsvp"
+          element = {
+            <PrivateRoute 
+            element={<EventRSVPs />}
+            allowedRoles={["admin", "teacher", "student"]}
+            />
+          }
+          />
           
           <Route 
           path="events/:id"
@@ -142,6 +174,8 @@ function App() {
             />
           }
           />
+
+          
 
 
 

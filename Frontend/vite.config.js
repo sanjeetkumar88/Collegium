@@ -14,6 +14,7 @@ export default defineConfig({
       '/club': 'http://localhost:8000', // Proxy all requests starting with "/api" to the backend
       '/devevent': 'http://localhost:8000', // Proxy all requests starting with "/api" to the backend
       '/devproject': 'http://localhost:8000', // Proxy all requests starting with "/api" to the backend
+      '/payment': 'http://localhost:8000', // Proxy all requests starting with "/api" to the backend
     },
   },
 });

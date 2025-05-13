@@ -34,18 +34,114 @@ const EventDetails = () => {
     fetchEventDetail();
   }, [id]);
 
-  const handleRegister = async () => {
-    try {
-      const response = await axios.post(`/devevent/${id}/register`, null, {
-        withCredentials: true, 
-      });
+  // const handleRegister = async () => {
+  //   try {
+  //     const response = await axios.post(`/devevent/${id}/register`, null, {
+  //       withCredentials: true, 
+  //     });
   
-      toast.success(response.data.message || "Successfully registered.");
-      // optionally, update local state if needed (e.g., show 'Registered' button)
-    } catch (error) {
-      const errMsg =
-        error?.response?.data?.message || "Something went wrong. Try again.";
-      toast.error(errMsg);
+  //     toast.success(response.data.message || "Successfully registered.");
+  //     // optionally, update local state if needed (e.g., show 'Registered' button)
+  //   } catch (error) {
+  //     const errMsg =
+  //       error?.response?.data?.message || "Something went wrong. Try again.";
+  //     toast.error(errMsg);
+  //   }
+  // };
+
+
+const handleRegister = async () => {
+    if (!eventDetails) return;
+    let paymentStatus = 'not-completed';
+
+    try {
+      // Paid event: integrate Razorpay
+      if (eventDetails.price > 0) {
+        // 1. Create Razorpay order on backend
+        const { data: orderData } = await axios.post(
+          '/payment/create-order',
+          { amount: eventDetails.price },
+          { withCredentials: true }
+        );
+
+        console.log(orderData);
+        
+
+        const { order } = orderData;
+
+        // 2. Configure Razorpay options
+        const options = {
+          key: 'rzp_test_vwLUozvhzgYD0u',
+          amount: order.amount,
+          currency: order.currency,
+          name: eventDetails.title,
+          description: `Payment for ${eventDetails.title}`,
+          order_id: order.id,
+          handler: async (response) => {
+            try {
+              // 3a. Verify payment signature on backend
+              const { data: verifyData } = await axios.post(
+                '/payment/verify-payment',
+                {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                },
+                { withCredentials: true }
+              );
+
+              if (!verifyData.success) {
+                toast.error('Payment verification failed');
+                return;
+              }else{
+                paymentStatus = 'completed';
+              }
+                
+                
+              // 3b. Register with payment
+              const { data: regData } = await axios.post(
+                `/devevent/${id}/registerwithpayment`,
+                {
+                  paymentId: response.razorpay_payment_id,
+                  orderId: response.razorpay_order_id,
+                  signature: response.razorpay_signature,
+                  paymentStatus:paymentStatus
+                },
+                { withCredentials: true }
+              );
+
+              toast.success(regData.message || 'Registered and paid successfully');
+            } catch (err) {
+              console.error(err);
+              toast.error('Registration with payment failed');
+            }
+          },
+          prefill: {
+            name: user.authUser.name || '',
+            email: user.authUser.email || '',
+            contact: user.authUser.contact || '',
+          },
+          theme: { color: '#3399cc' },
+        };
+
+        // 4. Open Razorpay Checkout
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+
+      } else {
+        // Free event: direct register
+        const { data } = await axios.post(
+          `/devevent/${id}/register`,
+          null,
+          { withCredentials: true }
+        );
+        toast.success(data.message || 'Successfully registered');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err.response?.data?.message || 'Something went wrong. Please try again.'
+      );
     }
   };
 
@@ -81,7 +177,7 @@ const EventDetails = () => {
         transition={{ duration: 0.4 }}
       >
         {(user.authUser.role === "admin" ||
-          eventDetails.createdBy === user.authUser.id) && (
+          eventDetails.createdBy === user.authUser.id || user.authUser.role === 'teacher') && (
           <>
             <motion.button
               whileHover={{ scale: 1.05 }}

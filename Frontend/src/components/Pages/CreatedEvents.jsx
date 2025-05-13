@@ -7,13 +7,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import EventCard from "../Cardcomp/EventCard";
 import { useAuth } from "../../context/Authcontext";
 
-function Events() {
+function CreatedEvents() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // States initialized from URL
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
   const [selectedType, setSelectedType] = useState(searchParams.get("privacy") || "");
-  const [selectedMembership, setSelectedMembership] = useState(searchParams.get("membership") || "");
+  const [selectedStatus,setSelectedStatus] = useState(searchParams.get("status") || "")
   const [selectedMode, setSelectedMode] = useState(searchParams.get("mode") || "");
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [showFilters, setShowFilters] = useState(false);
@@ -34,11 +34,11 @@ function Events() {
     { label: "Private", value: "private" },
   ];
 
-  const membershipOptions = [
+  const statusData = [
     { label: "All", value: "" },
-    { label: "Joined", value: "joined" },
-    { label: "Not Joined", value: "not-joined" },
-    { label: "Requested", value: "requested" },
+    { label: "Past", value: "completed" },
+    { label: "Upcoming", value: "upcoming" },
+    { label: "Ongoing", value: "ongoing" },
   ];
 
   const modeOptions = [
@@ -52,7 +52,7 @@ function Events() {
     const params = {
       category: selectedCategory,
       privacy: selectedType,
-      membership: selectedMembership,
+      status: selectedStatus,
       mode: selectedMode,
       search,
       page,
@@ -66,18 +66,18 @@ function Events() {
     });
 
     setSearchParams(cleanedParams);
-  }, [selectedCategory, selectedType, selectedMembership, selectedMode, search, page]);
+  }, [selectedCategory, selectedType, selectedStatus, selectedMode, search, page]);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await axios.get("/devevent/getAllEvents", {
+        const res = await axios.get("/devevent/createdevents", {
           params: {
             title: search,
             category: selectedCategory,
             privacy: selectedType,
             medium: selectedMode,
-            participationStatus: selectedMembership,
+            status: selectedStatus,
             page,
             limit,
           },
@@ -91,7 +91,7 @@ function Events() {
     };
 
     fetchEvents();
-  }, [search, selectedCategory, selectedType, selectedMode, selectedMembership, page]);
+  }, [search, selectedCategory, selectedType, selectedMode, selectedStatus, page]);
 
   return (
     <div className="p-6">
@@ -123,22 +123,15 @@ function Events() {
     >
       RSVP
     </Button>
-    <Button
-        onClick={() => navigate("/events/request")}
-          variant="filled"
-          color="blue"
-          radius="md"
-        >
-          Request
-        </Button>
-    <Button
-    onClick={() => navigate("/events/createdevent")}
+     <Button
+    onClick={() => navigate("/events/request")}
       variant="filled"
       color="blue"
       radius="md"
     >
-      Your Events
+      Request
     </Button>
+    
   </div>
 )}
 
@@ -225,12 +218,12 @@ function Events() {
           />
 
           <Select
-            placeholder="Membership"
-            value={selectedMembership}
-            data={membershipOptions}
+            placeholder="Stauts"
+            value={selectedStatus}
+            data={statusData}
             w={180}
             styles={{ input: { borderRadius: "8px" } }}
-            onChange={setSelectedMembership}
+            onChange={setSelectedStatus}
           />
         </motion.div>
       )}
@@ -277,4 +270,4 @@ function Events() {
   );
 }
 
-export default Events;
+export default CreatedEvents;

@@ -28,6 +28,8 @@ import eventrouter from './routes/event.routes.js'
 
 import projectrouter from './routes/project.route.js'
 
+import paymentrouter from './routes/payment.route.js'
+
 
 // routes declaration
 
@@ -36,6 +38,7 @@ app.use('/notes',notesRouter)
 app.use('/club',clubrouter)
 app.use('/devevent',eventrouter)
 app.use('/devproject',projectrouter)
+app.use('/payment', paymentrouter);
 
 
 
