@@ -1,7 +1,7 @@
 
 
 import { Club } from "../models/club.model.js";
-import { ApiError } from "../utils/apiError.js";
+import { ApiError } from "../utils/ApiError.js";
 
 export const isClubEditor = async (req, res, next) => {
   const userId = req.user._id;
