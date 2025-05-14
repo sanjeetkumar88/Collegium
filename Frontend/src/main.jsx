@@ -7,8 +7,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; 
 
 import { MantineProvider } from "@mantine/core";
-import { AuthProvider } from "./context/Authcontext.jsx";
-import { ClubProvider } from "./context/ClubContext.jsx";
+import { AuthProvider } from "./context/Authcontext";
+import { ClubProvider } from "./context/ClubContext";
 import { ModalsProvider } from '@mantine/modals'; 
 
 createRoot(document.getElementById("root")).render(
