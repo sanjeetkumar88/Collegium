@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../context/Authcontext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function EditEventForm() {
   const [userClubs, setUserClubs] = useState([]);

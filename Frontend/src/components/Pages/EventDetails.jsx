@@ -7,7 +7,7 @@ import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
-import { useAuth } from "../../context/Authcontext";
+import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 
 const EventDetails = () => {

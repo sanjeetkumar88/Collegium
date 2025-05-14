@@ -7,7 +7,7 @@ import SearchBar from "../EventDashboardComp/SearchBar";
 import EventList from "../EventDashboardComp/EventList";
 import Loader from "../EventDashboardComp/Loader";
 import Sidebar from "../EventDashboardComp/Sidebar";
-import { useAuth } from "../../context/Authcontext";
+import { useAuth } from "../../context/AuthContext";
 import { useFetchClubLeader } from "../../CustomHooks/useFetchClubLeader";
 
 const containerVariants = {

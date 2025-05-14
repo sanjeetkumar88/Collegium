@@ -4,7 +4,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Select, Pagination, Loader, Button, Tabs } from "@mantine/core";
 import { motion } from "framer-motion";
 import ResourseCard from "../Cardcomp/ResourseCard";
-import { useAuth } from "../../context/Authcontext";
+import { useAuth } from "../../context/AuthContext";
 import { FaSearch, FaBookOpen, FaUserAlt, FaBookmark, FaUpload } from "react-icons/fa";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";

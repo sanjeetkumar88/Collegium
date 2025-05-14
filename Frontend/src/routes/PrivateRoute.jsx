@@ -50,7 +50,7 @@
 
 // routes/PrivateRoute.jsx
 import { Navigate } from "react-router-dom"; 
-import { useAuth } from "../context/Authcontext";
+import { useAuth } from "../context/AuthContext";
 
 const PrivateRoute = ({ element, allowedRoles, isLeader }) => {
   const user = useAuth();

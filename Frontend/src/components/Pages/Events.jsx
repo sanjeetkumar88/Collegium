@@ -5,7 +5,7 @@ import { Select, Button, Chip, Pagination } from "@mantine/core";
 import { FiFilter } from "react-icons/fi";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import EventCard from "../Cardcomp/EventCard";
-import { useAuth } from "../../context/Authcontext";
+import { useAuth } from "../../context/AuthContext";
 import { useFetchClubLeader } from "../../CustomHooks/useFetchClubLeader";
 
 function Events() {

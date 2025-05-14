@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaCamera } from "react-icons/fa";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/Authcontext";
+import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify"; // Import toast
 
 export default function EventCreateForm() {

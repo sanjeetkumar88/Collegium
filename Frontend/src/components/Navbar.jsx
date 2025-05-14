@@ -13,7 +13,7 @@ import {
   FaFolderOpen,
   FaProjectDiagram,
 } from "react-icons/fa";
-import { useAuth } from "../context/Authcontext";
+import { useAuth } from "../context/AuthContext";
 
 const navItems = [
   { name: "Home", to: "/", icon: <FaHome /> },

@@ -5,7 +5,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { Select, Button, Chip, Pagination } from "@mantine/core";
 import { FiFilter } from "react-icons/fi";
-import { useAuth } from "../../context/Authcontext";
+import { useAuth } from "../../context/AuthContext";
 import { IoIosAddCircle } from "react-icons/io";
 import { useDebounce } from "use-debounce";
 import { useClub } from "../../context/ClubContext";
