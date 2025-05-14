@@ -19,7 +19,7 @@ import CreateNote from "./components/Pages/CreateNote";
 import CreateProject from "./components/Pages/CreateProject";
 import Projects from "./components/Pages/Projects";
 import ProjectDetail from "./components/Pages/ProjectDetail";
-import { useAuth } from "./context/Authcontext"; 
+import { useAuth } from "./context/AuthContext"; 
 import EventDetails from "./components/Pages/EventDetails";
 import EditEventForm from "./components/Pages/EditEventForm";  
 import EventDashBoard from "./components/Pages/EventDashBoard";
