@@ -9,9 +9,10 @@ import "react-toastify/dist/ReactToastify.css";
 import { MantineProvider } from "@mantine/core";
 import { ClubProvider } from "./context/ClubContext";
 import { ModalsProvider } from '@mantine/modals'; 
+import AuthProvider from './context/AuthContext';
 
 createRoot(document.getElementById("root")).render(
-  
+  <AuthProvider>
     <ClubProvider>
       <MantineProvider>
         <ModalsProvider>
@@ -20,5 +21,6 @@ createRoot(document.getElementById("root")).render(
         </ModalsProvider>
       </MantineProvider>
     </ClubProvider> 
+    </AuthProvider>
  
 );
