@@ -7,9 +7,9 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; 
 
 import { MantineProvider } from "@mantine/core";
-import { AuthProvider } from "./context/Authcontext";
 import { ClubProvider } from "./context/ClubContext";
 import { ModalsProvider } from '@mantine/modals'; 
+import { AuthProvider } from "./context/Authcontext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <AuthProvider>
@@ -20,6 +20,6 @@ createRoot(document.getElementById("root")).render(
           <ToastContainer /> {/* Add ToastContainer here */}
         </ModalsProvider>
       </MantineProvider>
-    </ClubProvider>
+    </ClubProvider> 
   </AuthProvider>
 );
