@@ -7,8 +7,6 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      // Proxy API requests to your backend
-       // Proxy all requests starting with "/users" to the backend
       '/api': 'https://collegium-k7r6.onrender.com', // Proxy all requests starting with "/api" to the backend
       '/notes': 'https://collegium-k7r6.onrender.com', // Proxy all requests starting with "/api" to the backend
       '/club': 'https://collegium-k7r6.onrender.com', // Proxy all requests starting with "/api" to the backend

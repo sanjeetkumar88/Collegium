@@ -8,9 +8,21 @@ dotenv.config({
     path: './.env'
 })
 
+const allowedOrigins = [
+  "https://collegium-kappa.vercel.app",
+  "http://localhost:5173",
+  "https://collegium-git-main-sanjeet-kumars-projects-8d859d11.vercel.app",
+  "https://collegium-kgsagdofm-sanjeet-kumars-projects-8d859d11.vercel.app"
+];
 
 app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
     credentials: true
 }))
 
