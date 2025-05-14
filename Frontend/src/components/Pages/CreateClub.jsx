@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { MultiSelect } from "@mantine/core";
-import axios from "axios";
+import axios from "../../utils/axios";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },

@@ -8,7 +8,7 @@ import {
   FaCheckCircle,
   FaTimesCircle,
 } from "react-icons/fa";
-import axios from "axios";
+import axios from "../../utils/axios";
 
 const sidebarVariants = {
   hidden: { x: "100%", opacity: 0 },

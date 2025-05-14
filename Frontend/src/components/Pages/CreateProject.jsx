@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { AiOutlinePlus } from "react-icons/ai";
 import { BsCloudUpload } from "react-icons/bs";
-import axios from "axios";
+import axios from "../../utils/axios";
 
 export default function CreateProject() {
   const [formData, setFormData] = useState({

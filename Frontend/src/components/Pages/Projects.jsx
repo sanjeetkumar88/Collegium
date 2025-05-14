@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from "../../utils/axios";
 import { Pagination, Tabs } from '@mantine/core';
 import { motion } from 'framer-motion';
 import { useAuth } from "../../context/AuthContext";

@@ -1,6 +1,6 @@
 import { Modal, FileInput, Button } from "@mantine/core";
 import { useState } from "react";
-import axios from "axios";
+import axios from "../../utils/axios";
 
 const EditCoverModal = ({ opened, onClose, projectId }) => {
   const [file, setFile] = useState(null);

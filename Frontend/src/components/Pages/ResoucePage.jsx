@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../../utils/axios";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Select, Pagination, Loader, Button, Tabs } from "@mantine/core";
 import { motion } from "framer-motion";

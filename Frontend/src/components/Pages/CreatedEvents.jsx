@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../utils/axios";
 import { motion } from "framer-motion";
 import { Select, Button, Chip, Pagination } from "@mantine/core";
 import { FiFilter } from "react-icons/fi";

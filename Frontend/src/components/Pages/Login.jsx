@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import axios from "../../utils/axios";
 import { useAuth } from "../../context/AuthContext";
 import { FiLoader } from "react-icons/fi";
 

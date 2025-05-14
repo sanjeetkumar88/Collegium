@@ -3,7 +3,7 @@ import EventSidebar from "../Eventdetail/EventSidebar";
 import EventAbout from "../Eventdetail/EventAbout";
 import EventTerms from "../Eventdetail/EventTerms";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../utils/axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";

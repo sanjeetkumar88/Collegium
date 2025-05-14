@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../utils/axios";
 import { AiOutlineCalendar, AiOutlineLock, AiOutlineGlobal, AiOutlineVideoCamera, AiOutlineLaptop } from "react-icons/ai";
 import Header from "../EventDashboardComp/Header";
 

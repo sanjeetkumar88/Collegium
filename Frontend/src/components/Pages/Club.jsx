@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ClubCard from "../Cardcomp/Clubcard";
-import axios from "axios";
+import axios from "../../utils/axios";
 import { motion } from "framer-motion";
 import { Select, Button, Chip, Pagination } from "@mantine/core";
 import { FiFilter } from "react-icons/fi";

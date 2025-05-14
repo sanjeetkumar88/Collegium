@@ -14,7 +14,6 @@ export default defineConfig({
       '/devproject': 'https://collegium-k7r6.onrender.com', // Proxy all requests starting with "/api" to the backend
       '/payment': 'https://collegium-k7r6.onrender.com', // Proxy all requests starting with "/api" to the backend
       '/users': 'https://collegium-k7r6.onrender.com', // Proxy all requests starting with "/api" to the backend
-      
     },
   },  
 });

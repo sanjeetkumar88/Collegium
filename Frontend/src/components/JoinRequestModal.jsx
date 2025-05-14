@@ -8,7 +8,7 @@ import {
   Avatar,
   Badge,
 } from "@mantine/core";
-import axios from "axios";
+import axios from "../../utils/axios";
 
 const JoinRequestModal = ({ opened, onClose, projectId }) => {
   const [requests, setRequests] = useState([]);

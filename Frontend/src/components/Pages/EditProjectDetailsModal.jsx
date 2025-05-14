@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal, TextInput, Textarea, Button } from "@mantine/core";
-import axios from "axios";
+import axios from "../../utils/axios";
 
 const EditProjectDetailsModal = ({ opened, onClose, projectData, onSave }) => {
   // State to manage form values

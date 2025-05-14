@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import useDebounce from "../../CustomHooks/useDebounce";
-import axios from "axios";
+import axios from "../../utils/axios";
 import Header from "../EventDashboardComp/Header";
 import SearchBar from "../EventDashboardComp/SearchBar";
 import EventList from "../EventDashboardComp/EventList";
