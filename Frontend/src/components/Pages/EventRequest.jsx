@@ -6,7 +6,7 @@ import Header from "../EventDashboardComp/Header";
 import SearchBar from "../EventDashboardComp/SearchBar";
 import EventList from "../EventDashboardComp/EventList";
 import Loader from "../EventDashboardComp/Loader";
-import Sidebar from "../EventDashboardComp/Sidebar";
+import Sidebar from "../EventDashboardComp/SideBar";
 import { useAuth } from "../../context/Authcontext";
 import { useFetchClubLeader } from "../../CustomHooks/useFetchClubLeader";
 

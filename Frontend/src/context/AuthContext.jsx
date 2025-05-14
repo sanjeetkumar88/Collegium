@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const res = await axios.get("/users/verify", { withCredentials: true });
         setAuthUser(res.data.user); 
-      } catch (err) {
+      } catch (err) { 
         setAuthUser(null);
       } finally {
         setLoading(false);
