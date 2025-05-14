@@ -9,7 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { MantineProvider } from "@mantine/core";
 import { ClubProvider } from "./context/ClubContext";
 import { ModalsProvider } from '@mantine/modals'; 
-import { AuthProvider } from "./context/Authcontext.jsx";
+import AuthProvider from "./context/Authcontext";
 
 createRoot(document.getElementById("root")).render(
   <AuthProvider>
