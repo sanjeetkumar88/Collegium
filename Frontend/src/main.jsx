@@ -12,7 +12,7 @@ import { ModalsProvider } from '@mantine/modals';
 import AuthProvider from "./context/Authcontext";
 
 createRoot(document.getElementById("root")).render(
-  <AuthProvider>
+  
     <ClubProvider>
       <MantineProvider>
         <ModalsProvider>
@@ -21,5 +21,5 @@ createRoot(document.getElementById("root")).render(
         </ModalsProvider>
       </MantineProvider>
     </ClubProvider> 
-  </AuthProvider>
+ 
 );

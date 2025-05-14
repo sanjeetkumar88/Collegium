@@ -27,12 +27,14 @@ import EventRSVPs from "./components/Pages/EventRSVPs";
 import CreatedEvents from "./components/Pages/CreatedEvents";
 import EventRequest from "./components/Pages/EventRequest";
 import { useFetchClubLeader } from "./CustomHooks/useFetchClubLeader";
+import AuthProvider from "./context/Authcontext";
 
 function App() {
   const auth = useAuth();
   const {isLeader} = useFetchClubLeader();
   
   return (
+    <AuthProvider>
     <BrowserRouter>
       <Routes>
         {/* Public Routes */}
@@ -207,6 +209,7 @@ function App() {
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
       </Routes>
     </BrowserRouter>
+    </AuthProvider>
   );
 }
 
