@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import axios from "../../utils/axios";
+import axios from "../utils/axios";
 
 const ClubContext = createContext();
 
