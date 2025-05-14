@@ -44,24 +44,29 @@ export default function EventCreateForm() {
   const navigate = useNavigate();
   const user = useAuth();
 
-  useEffect(() => {
-    const fetchClubs = async () => {
-      try {
-        const { data } = await axios.get("/club/mine");
-        setUserClubs(data.clubs);
-        if (data.clubs.length > 0) {
-          setIsLeader(true);
-        }
-      } catch (err) {
-        console.error("Error fetching user clubs", err);
-      }
-    };
-    fetchClubs();
+const [loadingClubs, setLoadingClubs] = useState(true);
 
-    if (user.authUser.role === "student" && !isLeader) {
-      navigate("/unauthorized");
+useEffect(() => {
+  const fetchClubs = async () => {
+    try {
+      const { data } = await axios.get("/club/mine");
+      setUserClubs(data.clubs);
+      setIsLeader(data.clubs.length > 0);
+    } catch (err) {
+      console.error("Error fetching user clubs", err);
+    } finally {
+      setLoadingClubs(false);
     }
-  }, [user, isLeader, navigate]);
+  };
+  fetchClubs();
+}, []);
+
+useEffect(() => {
+  if (!loadingClubs && user.authUser.role === "student" && !isLeader) {
+    navigate("/unauthorized");
+  }
+}, [loadingClubs, isLeader, navigate, user.authUser.role]);
+
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];

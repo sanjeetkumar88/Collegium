@@ -6,6 +6,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Event } from "../models/event.model.js";
 import mongoose from "mongoose";
+import { sendMail } from "../utils/sendMail.js";
+
 
 import QRCode from "qrcode";
 import nodemailer from "nodemailer";
@@ -910,7 +912,7 @@ export const getRegisteredUsers = asyncHandler(async (req, res) => {
     }
 
     const event = await Event.findById(eventId)
-      .populate("registeredUsers.user", "fullName username email avatar")
+      .populate("registeredUsers.user", "_id fullName username email avatar")
       .lean();
 
     if (!event) {
@@ -921,10 +923,13 @@ export const getRegisteredUsers = asyncHandler(async (req, res) => {
     const isAdmin = userRole === "admin";
 
     if (!isCreator && !isAdmin) {
-      return res.status(403).json({ message: "Access denied. Only the event creator or an admin can view registered users." });
+      return res.status(403).json({
+        message: "Access denied. Only the event creator or an admin can view registered users.",
+      });
     }
 
     const users = event.registeredUsers.map(({ user }) => ({
+      _id: user._id,
       fullName: user.fullName,
       username: user.username,
       email: user.email,
@@ -938,7 +943,6 @@ export const getRegisteredUsers = asyncHandler(async (req, res) => {
   }
 });
 
-// DOWNLOAD Registered Users XLS
 export const downloadRegisteredUsersXLS = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -992,7 +996,6 @@ export const downloadRegisteredUsersXLS = asyncHandler(async (req, res) => {
   }
 });
 
-// GET Waitlisted Users
 export const getWaitlistedUsers = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -1004,7 +1007,7 @@ export const getWaitlistedUsers = asyncHandler(async (req, res) => {
     }
 
     const event = await Event.findById(eventId)
-      .populate("waitlist.user", "fullName username email avatar")
+      .populate("waitlist.user", "_id fullName username email avatar")
       .lean();
 
     if (!event) {
@@ -1015,24 +1018,26 @@ export const getWaitlistedUsers = asyncHandler(async (req, res) => {
     const isAdmin = userRole === "admin";
 
     if (!isCreator && !isAdmin) {
-      return res.status(403).json({ message: "Access denied. Only the event creator or an admin can view waitlist." });
+      return res.status(403).json({
+        message: "Access denied. Only the event creator or an admin can view the waitlist.",
+      });
     }
 
-    const users = event.waitlist.map(({ user }) => ({
+    const users = (event.waitlist || []).map(({ user }) => ({
+      _id: user._id,
       fullName: user.fullName,
       username: user.username,
       email: user.email,
       avatar: user.avatar,
     }));
 
-    res.status(200).json({ users });
+    return res.status(200).json({ users });
   } catch (error) {
-    console.error("Error fetching waitlisted users:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error fetching waitlisted users:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// DOWNLOAD Waitlisted Users XLS
 export const downloadWaitlistedUsersXLS = asyncHandler(async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -1115,7 +1120,10 @@ export const updateWaitlistStatus = asyncHandler(async (req, res) => {
     return res.status(403).json({ message: "Access denied. Only the event creator or an admin can update waitlist." });
   }
 
-  const waitlistEntry = event.waitlist.find(entry => entry.user._id.toString() === userId);
+  const waitlistEntry = event.waitlist.find(
+    (entry) => entry.user._id.toString() === userId
+  );
+
   if (!waitlistEntry) {
     return res.status(404).json({ message: "User not found in waitlist." });
   }
@@ -1127,22 +1135,27 @@ export const updateWaitlistStatus = asyncHandler(async (req, res) => {
     const eventToUpdate = await Event.findById(eventId);
 
     // Remove from waitlist
-    eventToUpdate.waitlist = eventToUpdate.waitlist.filter(entry => entry.user.toString() !== userId);
+    eventToUpdate.waitlist = eventToUpdate.waitlist.filter(
+      (entry) => entry.user.toString() !== userId
+    );
 
     if (action === "accept") {
-      eventToUpdate.registeredUsers.push({ user: userId, registeredAt: new Date() });
+      // Add to registered users
+      eventToUpdate.registeredUsers.push({
+        user: userId,
+        registeredAt: new Date(),
+      });
 
       await eventToUpdate.save();
 
       // Send acceptance email
-      await transporter.sendMail({
-        from: `"Event Team" <${process.env.EMAIL_USER}>`,
+      await sendMail({
         to: email,
         subject: "You're In! Event Registration Confirmed",
         html: `
           <p>Hello ${fullName},</p>
-          <p>Congratulations! You've been moved from the waitlist to the registered participants list for the event: <strong>${event.title}</strong>.</p>
-          <p>Thank you for your patience!</p>
+          <p>Congratulations! You have been moved from the waitlist to the registered participants list for the event: <strong>${event.title}</strong>.</p>
+          <p>Thank you for your patience and welcome aboard!</p>
         `,
       });
 
@@ -1153,20 +1166,18 @@ export const updateWaitlistStatus = asyncHandler(async (req, res) => {
       await eventToUpdate.save();
 
       // Send rejection email
-      await transporter.sendMail({
-        from: `"Event Team" <${process.env.EMAIL_USER}>`,
+      await sendMail({
         to: email,
         subject: "Event Waitlist Update",
         html: `
           <p>Hello ${fullName},</p>
           <p>Unfortunately, your waitlist request for the event <strong>${event.title}</strong> was not approved.</p>
-          <p>We hope to see you in a future event.</p>
+          <p>We hope to see you in future events.</p>
         `,
       });
 
       return res.status(200).json({ message: "User rejected and notified via email." });
     }
-
   } catch (err) {
     console.error("Error processing waitlist update:", err);
     return res.status(500).json({ message: "An error occurred while processing the request." });
@@ -1245,6 +1256,50 @@ export const downloadEventSummaryXLS = async (req, res) => {
     res.status(500).json({ message: "Failed to generate event summary." });
   }
 };
+
+export const removeMember = asyncHandler(async (req, res) => {
+  try {
+    const { eventId, memberId } = req.params;
+    const userId = req.user._id;
+    const userRole = req.user.role;
+
+    if (!mongoose.Types.ObjectId.isValid(eventId) || !mongoose.Types.ObjectId.isValid(memberId)) {
+      return res.status(400).json({ message: "Invalid event ID or member ID" });
+    }
+
+    const event = await Event.findById(eventId);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const isCreator = event.createdBy?.toString() === userId.toString();
+    const isAdmin = userRole === "admin";
+
+    if (!isCreator && !isAdmin) {
+      return res.status(403).json({ message: "Access denied. Only the event creator or an admin can remove members." });
+    }
+
+    // Check if the member is actually registered in the event
+    const isMember = event.registeredUsers.some((user) => user.user.toString() === memberId);
+
+    if (!isMember) {
+      return res.status(404).json({ message: "User not registered in this event" });
+    }
+
+    // Remove the member
+    event.registeredUsers = event.registeredUsers.filter(
+      (user) => user.user.toString() !== memberId
+    );
+
+    await event.save();
+
+    res.status(200).json({ message: "Member removed successfully" });
+  } catch (error) {
+    console.error("Error removing member:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 
 

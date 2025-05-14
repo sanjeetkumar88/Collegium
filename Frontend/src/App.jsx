@@ -12,8 +12,8 @@ import ClubDetail from "./components/Pages/ClubDetails";
 import CreateEventForm from "./components/Pages/createEvent";
 import NotFound from "./components/Pages/NotFound";
 import UnauthorizedPage from "./components/UnauthorizePage/UnauthorizedPage";
-
-import PrivateRoute from "./routes/PrivateRoute";
+   
+import PrivateRoute from "./routes/PrivateRoute"; 
 import CreateClub from "./components/Pages/CreateClub";
 import CreateNote from "./components/Pages/CreateNote";
 import CreateProject from "./components/Pages/CreateProject";
@@ -25,9 +25,13 @@ import EditEventForm from "./components/Pages/EditEventForm";
 import EventDashBoard from "./components/Pages/EventDashBoard";
 import EventRSVPs from "./components/Pages/EventRSVPs";
 import CreatedEvents from "./components/Pages/CreatedEvents";
+import EventRequest from "./components/Pages/EventRequest";
+import { useFetchClubLeader } from "./CustomHooks/useFetchClubLeader";
 
 function App() {
   const auth = useAuth();
+  const {isLeader} = useFetchClubLeader();
+  
   return (
     <BrowserRouter>
       <Routes>
@@ -130,7 +134,8 @@ function App() {
           element = {
             <PrivateRoute 
             element={<EventDashBoard />}
-            allowedRoles={["admin", "teacher", "student"]}
+            allowedRoles={["admin", "teacher"]}
+            isLeader={isLeader}
             />
           }
           />
@@ -139,7 +144,8 @@ function App() {
           element = {
             <PrivateRoute 
             element={<CreatedEvents />}
-            allowedRoles={["admin", "teacher", "student"]}
+            allowedRoles={["admin", "teacher"]}
+            isLeader={isLeader}
             />
           }
           />
@@ -149,10 +155,23 @@ function App() {
           element = {
             <PrivateRoute 
             element={<EventRSVPs />}
-            allowedRoles={["admin", "teacher", "student"]}
+            allowedRoles={["admin", "teacher"]}
+            isLeader={isLeader}
             />
           }
           />
+
+          <Route 
+          path="events/waitlist-users"
+          element = {
+            <PrivateRoute 
+            element={<EventRequest />}
+            allowedRoles={["admin", "teacher"]}
+            isLeader={isLeader}
+            />
+          }
+          />
+         
           
           <Route 
           path="events/:id"
@@ -170,7 +189,8 @@ function App() {
           element = {
             <PrivateRoute 
             element={<EditEventForm />}
-            allowedRoles={["admin", "teacher", "student"]}
+            allowedRoles={["admin", "teacher"]}
+            isLeader={isLeader}
             />
           }
           />

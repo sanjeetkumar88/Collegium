@@ -19,7 +19,7 @@ const containerVariants = {
   },
 };
 
-function EventRSVPs() {
+function EventRequest() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -37,12 +37,12 @@ function EventRSVPs() {
   const {isLeader} = useFetchClubLeader();
   const user = useAuth();
 
-  // Reset page and fetch events when the search term changes
+  // Reset page when search term changes
   useEffect(() => {
     setPage(1);
   }, [debouncedSearchTerm]);
 
-  // Fetch events when page or search term changes
+  // Fetch events whenever page or search term changes
   useEffect(() => {
     fetchEvents();
   }, [debouncedSearchTerm, page]);
@@ -50,7 +50,8 @@ function EventRSVPs() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/devevent/rsvps", {
+
+      const response = await axios.get("/devevent/getrequstedusers", {
         params: { title: debouncedSearchTerm, page, limit },
       });
 
@@ -75,7 +76,7 @@ function EventRSVPs() {
 
     try {
       setUsersLoading(true);
-      const response = await axios.get(`/devevent/${event._id}/registered-users`);
+      const response = await axios.get(`/devevent/${event._id}/waitlisted-users`);
       setRegisteredUsers(response.data.users || []);
     } catch (err) {
       console.error("Error fetching registered users:", err);
@@ -106,9 +107,9 @@ function EventRSVPs() {
       animate="visible"
       variants={containerVariants}
     >
-      <Header name="RSVPs" title="Manage and View Event RSVPs" 
+      <Header name="Request" title="Manage and View Event Requests"
+      rsvp={true}
       dashboard={true}
-      request={true}
       yourEvent={true}
       />
 
@@ -120,8 +121,6 @@ function EventRSVPs() {
         loading={loading} 
         onEventClick={handleEventClick} 
       />
-
-      {loading && <Loader text="Loading events..." />}
 
       {/* Pagination Controls */}
       <div className="flex justify-center items-center gap-4 mt-6">
@@ -162,4 +161,4 @@ function EventRSVPs() {
   );
 }
 
-export default EventRSVPs;
+export default EventRequest;

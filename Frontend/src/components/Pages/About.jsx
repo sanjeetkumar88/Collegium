@@ -30,10 +30,10 @@ const fadeInUp = {
 
 const About = () => {
   return (
-    <div className="bg-white text-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 text-gray-800">
       {/* Hero Section */}
       <motion.section
-        className="relative text-center py-24 px-4 bg-[#f6f6f6]"
+        className="relative text-center py-24 px-4"
         initial="hidden"
         animate="visible"
         variants={fadeInUp}
@@ -41,8 +41,8 @@ const About = () => {
         <h1 className="text-5xl font-extrabold leading-tight text-gray-900">
           Hello!
           <br />
-          <span className="text-lime-500">We are Creative Builders of </span>
-          <span className="text-gray-700 underline decoration-lime-400 underline-offset-4">
+          <span className="text-indigo-500">We are Creative Builders of </span>
+          <span className="text-gray-700 underline decoration-indigo-400 underline-offset-4">
             COLLEGIUM
           </span>
         </h1>
@@ -67,9 +67,9 @@ const About = () => {
       </motion.section>
 
       {/* Merits Section */}
-      <section className="py-20 px-6 bg-white text-center">
+      <section className="py-20 px-6 text-center">
         <motion.h2
-          className="text-3xl font-bold mb-10"
+          className="text-3xl font-bold mb-10 text-indigo-700"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -78,32 +78,7 @@ const About = () => {
           KNOW OUR MERITS
         </motion.h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl mx-auto text-left">
-          {[
-            {
-              title: "CREATIVITY",
-              desc: "Each module is crafted with care, solving real problems with unique ideas. No copy-paste solutions.",
-            },
-            {
-              title: "HONESTY",
-              desc: "Built fully by me — no shortcuts. Every component reflects time, thought, and purpose.",
-            },
-            {
-              title: "COMMUNICATION",
-              desc: "Collaboration flows easily with built-in chat, team requests, and friend systems.",
-            },
-            {
-              title: "TEAMWORK",
-              desc: "Projects and clubs allow everyone to contribute and grow. Co-leaders, applicants, and mentors foster healthy dynamics.",
-            },
-            {
-              title: "PASSION",
-              desc: "From UI/UX to server security, every detail was carefully crafted with passion for learning and execution.",
-            },
-            {
-              title: "SCALABILITY",
-              desc: "Designed with future growth in mind — modular architecture and clean codebase.",
-            },
-          ].map((item, i) => (
+          {["CREATIVITY", "HONESTY", "COMMUNICATION", "TEAMWORK", "PASSION", "SCALABILITY"].map((title, i) => (
             <motion.div
               key={i}
               custom={i}
@@ -111,12 +86,19 @@ const About = () => {
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeInUp}
-              className="bg-gray-50 p-6 rounded-lg shadow-md"
+              className="bg-white p-6 rounded-lg shadow-md border border-gray-200"
             >
               <h3 className="text-xl font-semibold mb-2 text-gray-900">
-                {item.title}
+                {title}
               </h3>
-              <p className="text-gray-600">{item.desc}</p>
+              <p className="text-gray-600">
+                {["Each module is crafted with care, solving real problems with unique ideas.",
+                  "Built fully by me — no shortcuts. Every component reflects time, thought, and purpose.",
+                  "Collaboration flows easily with built-in chat, team requests, and friend systems.",
+                  "Projects and clubs allow everyone to contribute and grow.",
+                  "From UI/UX to server security, every detail was crafted with passion.",
+                  "Designed with future growth in mind — modular architecture and clean codebase."][i]}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -125,7 +107,7 @@ const About = () => {
       {/* Features List */}
       <section className="py-20 bg-gray-100 px-6 text-center">
         <motion.h2
-          className="text-3xl font-bold mb-10"
+          className="text-3xl font-bold mb-10 text-indigo-700"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -151,12 +133,12 @@ const About = () => {
       </section>
 
       {/* Footer Contact */}
-      <footer className="py-12 bg-lime-500 text-white text-center">
+      <footer className="py-12 bg-indigo-600 text-white text-center">
         <h3 className="text-2xl font-bold mb-2">
           Created with ❤️ by Sanjeet Kumar
         </h3>
         <p className="mb-1">Full-Stack Developer | Builder of COLLEGIUM</p>
-        <div className="flex justify-center gap-6">
+        <div className="flex justify-center gap-6 mt-4">
           <a href="https://twitter.com">
             <FaTwitter className="text-xl hover:text-white/80" />
           </a>

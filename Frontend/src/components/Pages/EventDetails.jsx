@@ -34,20 +34,6 @@ const EventDetails = () => {
     fetchEventDetail();
   }, [id]);
 
-  // const handleRegister = async () => {
-  //   try {
-  //     const response = await axios.post(`/devevent/${id}/register`, null, {
-  //       withCredentials: true, 
-  //     });
-  
-  //     toast.success(response.data.message || "Successfully registered.");
-  //     // optionally, update local state if needed (e.g., show 'Registered' button)
-  //   } catch (error) {
-  //     const errMsg =
-  //       error?.response?.data?.message || "Something went wrong. Try again.";
-  //     toast.error(errMsg);
-  //   }
-  // };
 
 
 const handleRegister = async () => {

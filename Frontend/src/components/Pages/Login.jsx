@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import { FiLoader } from "react-icons/fi";
 
 function Login() {
-  const navigate = useNavigate();
   const auth = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -35,20 +36,26 @@ function Login() {
     setLoading(true);
     try {
       const response = await axios.post('/users/login', formData);
+
       if (response.status === 200) {
-        
         auth.login(response.data.data.user);
-        
-        
         window.location.href = '/';
       }
     } catch (error) {
       if (error.response) {
-        setErrors({ server: error.response.data.message || 'An error occurred.' });
+        // Check for specific error and extract the message
+        if (error.response.data && error.response.data.message) {
+          setErrors({ server: error.response.data.message });
+        } else if (error.response.data.includes("Error: User does not exist")) {
+          // If the response contains a "User does not exist" error
+          setErrors({ server: "User does not exist. Please check your credentials." });
+        } else {
+          setErrors({ server: 'Inalid password' });
+        }
       } else if (error.request) {
         setErrors({ server: 'No response received from the server. Please check your network.' });
       } else {
-        setErrors({ server: err.response.data.message|| 'An unexpected error occurred.' });
+        setErrors({ server: 'An unexpected error occurred.' });
       }
     } finally {
       setLoading(false);
@@ -91,11 +98,9 @@ function Login() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-md text-white mt-6 transition-colors ${
-              loading ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'
-            } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+            className={`w-full py-3 rounded-md text-white mt-6 transition-colors ${loading ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'} focus:outline-none focus:ring-2 focus:ring-indigo-500`}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? <FiLoader className="inline-block animate-spin mr-2" /> : 'Login'}
           </button>
         </form>
 

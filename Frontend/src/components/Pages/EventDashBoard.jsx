@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AiOutlineCalendar, AiOutlineLock, AiOutlineGlobal, AiOutlineVideoCamera, AiOutlineLaptop } from "react-icons/ai";
+import Header from "../EventDashboardComp/Header";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -68,20 +69,14 @@ function EventDashBoard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-50 px-8 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-800">Dashboard</h1>
-          <p className="text-gray-500 mt-1">{date.toLocaleString()}</p>
-        </div>
-
-        <motion.button
-          whileHover={buttonHover}
-          onClick={() => navigate("/events/createevent")}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg transition cursor-pointer"
-        >
-          + Create Event
-        </motion.button>
-      </div>
+      
+      <Header 
+      rsvp={true}
+      request={true}
+      yourEvent={true}
+      name="Dashboard"
+      title={date.toLocaleString()}
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, i) => (

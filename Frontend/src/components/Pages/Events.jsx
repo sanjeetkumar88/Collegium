@@ -6,6 +6,7 @@ import { FiFilter } from "react-icons/fi";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import EventCard from "../Cardcomp/EventCard";
 import { useAuth } from "../../context/Authcontext";
+import { useFetchClubLeader } from "../../CustomHooks/useFetchClubLeader";
 
 function Events() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -23,6 +24,7 @@ function Events() {
   const limit = 6;
   const user = useAuth();
   const navigate = useNavigate();
+  const {isLeader} = useFetchClubLeader();
 
   const categories = [
     "Sports", "DSA", "MERN", "Cybersecurity", "JAVA Developer", "AI", "Data Science"
@@ -95,7 +97,7 @@ function Events() {
 
   return (
     <div className="p-6">
-      {(user.authUser?.role === "admin" || user.authUser?.role === "teacher") && (
+      {(user.authUser?.role === "admin" || user.authUser?.role === "teacher" || isLeader) && (
   <div className="flex justify-end mb-4 gap-2">
     <Button
       onClick={() => navigate("/events/createevent")}
@@ -124,7 +126,7 @@ function Events() {
       RSVP
     </Button>
     <Button
-        onClick={() => navigate("/events/request")}
+        onClick={() => navigate("/events/waitlist-users")}
           variant="filled"
           color="blue"
           radius="md"
