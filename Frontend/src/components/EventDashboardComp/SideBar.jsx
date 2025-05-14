@@ -19,7 +19,7 @@ const sidebarVariants = {
   },
 };
 
-const Sidebar = ({ isOpen, onClose, members = [], event, refetchMembers, refetchEvents }) => {
+const SideBar = ({ isOpen, onClose, members = [], event, refetchMembers, refetchEvents }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredMembers, setFilteredMembers] = useState(members);
 
@@ -194,4 +194,4 @@ const Sidebar = ({ isOpen, onClose, members = [], event, refetchMembers, refetch
   );
 };
 
-export default Sidebar;
+export default SideBar;

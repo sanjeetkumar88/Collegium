@@ -6,7 +6,7 @@ import Header from "../EventDashboardComp/Header";
 import SearchBar from "../EventDashboardComp/SearchBar";
 import EventList from "../EventDashboardComp/EventList";
 import Loader from "../EventDashboardComp/Loader";
-import Sidebar from "../EventDashboardComp/EventSidebar";
+import SideBar from "../EventDashboardComp/SideBar";
 import { useAuth } from "../../context/AuthContext";
 import { useFetchClubLeader } from "../../CustomHooks/useFetchClubLeader";
 
@@ -150,7 +150,7 @@ function EventRSVPs() {
         </button>
       </div>
 
-      <Sidebar 
+      <SideBar 
         isOpen={isSidebarOpen} 
         event={selectedEvent} 
         onClose={closeSidebar} 
