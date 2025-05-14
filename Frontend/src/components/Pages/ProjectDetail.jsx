@@ -23,7 +23,7 @@ import UserCardSm from "../Cardcomp/projectDetail/UserCardSm";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
-import JoinRequestModal from "../joinRequestModal";
+import JoinRequestModal from "../JoinRequestModal";
 import EditCoverModal from "./EditCoverModal";
 import EditProjectDetailsModal from "./EditProjectDetailsModal";
 
