@@ -5,89 +5,101 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import  jwt  from "jsonwebtoken";
 import {Note} from "../models/notes.model.js"
 import fs from "fs"
-import { generatePdfThumbnail } from "../utils/generatePdfThumbnail.js"; 
 import { sendMail } from "../utils/sendMail.js";
+import { compressPdf } from "../utils/compressPdf.js";
+
 
 const uploadnotes = asyncHandler(async (req, res) => {
+  let uploadedNotes = null;
+  let fileToUploadPath = "";
+  let compressedOutputPath = "";
+
   try {
-    const { title, description, type, subject, isPublic, branch, } = req.body;
+    const { title, description, type, subject, isPublic, branch } = req.body;
     const userId = req.user.id;
 
     if ([title, description, type, subject, branch].some((field) => field?.trim() === "")) {
       throw new ApiError(400, "All fields are required");
     }
 
-    const NotesLocalPath = req.files?.notes[0]?.path;
-
+    const NotesLocalPath = req.files?.notes?.[0]?.path;
     if (!NotesLocalPath) {
       throw new ApiError(400, "Notes file is required");
     }
 
-    // Generate PDF thumbnail if it's a PDF
-    let thumbnailPath = "";
+    fileToUploadPath = NotesLocalPath;
+
+    // If PDF, compress
     if (NotesLocalPath.endsWith(".pdf")) {
-      thumbnailPath = await generatePdfThumbnail(NotesLocalPath);
+      compressedOutputPath = NotesLocalPath.replace(".pdf", "-compressed.pdf");
+      await compressPdf(NotesLocalPath, compressedOutputPath);
+      fileToUploadPath = compressedOutputPath;
     }
 
-    // Upload notes file to Cloudinary
-    const uploadedNotes = await uploadOnCloudinary(NotesLocalPath, "raw");
+    // Upload file to Cloudinary
+    uploadedNotes = await uploadOnCloudinary(fileToUploadPath, "raw");
     if (!uploadedNotes) {
       throw new ApiError(400, "Failed to upload notes file");
     }
 
-    // Upload thumbnail to Cloudinary if it exists
+    // Generate Cloudinary thumbnail
     let uploadedThumbnail = "";
-    if (thumbnailPath) {
-      uploadedThumbnail = await uploadOnCloudinary(thumbnailPath, "image");
+    if (fileToUploadPath.endsWith(".pdf")) {
+      const secure_url = uploadedNotes.secure_url;
+      uploadedThumbnail = secure_url
+        .replace("/upload/", "/upload/pg_1,w_300,h_300,c_fill/")
+        .replace(".pdf", ".jpg");
     }
 
-    // Create the note record in DB
+    // Save to DB
     const newNote = await Note.create({
       title,
       description,
       type,
       subject,
-      fileUrl: uploadedNotes.secure_url, 
-      thumbnail: uploadedThumbnail ? uploadedThumbnail.secure_url : "", 
+      fileUrl: uploadedNotes.secure_url,
+      thumbnail: uploadedThumbnail,
       author: userId,
       isPublic: isPublic !== undefined ? isPublic : true,
       branch,
     });
 
-    
     const createdNote = await Note.findById(newNote._id).select("-is_deleted");
-
-    
-    
 
     if (!createdNote) {
       throw new ApiError(500, "Something went wrong while uploading notes");
     }
-    else{
-        await sendMail({
-            to: req.user.email, 
-            subject: "Notes Uploaded Successfully",
-            html: `<h2>Hi ${req.user.name},</h2><p>Your note titled <b>${title}</b> was uploaded successfully!</p>`,
-          });
-    }
 
-    
-    
+    await sendMail({
+      to: req.user.email,
+      subject: "Notes Uploaded Successfully",
+      html: `<h2>Hi ${req.user.name},</h2><p>Your note titled <b>${title}</b> was uploaded successfully!</p>`,
+    });
 
     return res.status(201).json(new ApiResponse(200, createdNote, "Note uploaded successfully"));
-
   } catch (error) {
-    
-    if (error.uploadedNotes?.public_id) {
-      await deleteFromCloudinary(error.uploadedNotes.public_id);
-    }
-    if (error.uploadedThumbnail?.public_id) {
-      await deleteFromCloudinary(error.uploadedThumbnail.public_id);
+    // Cleanup: Delete from Cloudinary if uploaded
+    if (uploadedNotes?.public_id) {
+      await deleteFromCloudinary(uploadedNotes.public_id);
     }
 
-    throw new ApiError(401, error?.message || "Something went wrong");
+    // Cleanup: Delete local files
+    try {
+      if (fs.existsSync(fileToUploadPath)) fs.unlinkSync(fileToUploadPath);
+      if (compressedOutputPath && fs.existsSync(compressedOutputPath)) fs.unlinkSync(compressedOutputPath);
+    } catch (err) {
+      console.error("Cleanup error:", err.message);
+    }
+
+    return res.status(400).json({
+      error: {
+        code: 400,
+        message: error.message || "Something went wrong",
+      },
+    });
   }
 });
+
 
 // const getNotes = asyncHandler(async (req, res) => {
 //     try {

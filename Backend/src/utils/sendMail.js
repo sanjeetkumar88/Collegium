@@ -17,7 +17,7 @@ export const sendMail = async ({ to, subject, html }) => {
       },
     });
 
-    // console.log();
+    console.log(process.env.GMAIL_PASS);
     
 
     const info = await transporter.sendMail({
@@ -26,7 +26,7 @@ export const sendMail = async ({ to, subject, html }) => {
       subject,
       html,
     });
-    // /console.log(info);
+    console.log(info);
 
     return info;
   } catch (error) {
