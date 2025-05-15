@@ -2,6 +2,7 @@ import { Router } from "express";
 import {createEvents, dashboard, deleteEvent, downloadEventSummaryXLS, downloadRegisteredUsersXLS, downloadWaitlistedUsersXLS, editEvents, getAllEvents, getCreatedEvent, getEventDetail, getRegisteredUsers, getRequest, getRsvps, getWaitlistedUsers, registerUser, registerUserWithPayment, removeMember, updateWaitlistStatus} from "../controllers/event.controller.js"
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import {canCreateEvent} from "../middlewares/canCreateEvent.js";
 
 
 const router = Router();
@@ -10,6 +11,7 @@ const router = Router();
 
 router.route("/createevent").post(verifyJWT,
     upload.single("image"),
+    canCreateEvent,
     createEvents,);
 
 router.route("/getrequstedusers").get(verifyJWT,getRequest);

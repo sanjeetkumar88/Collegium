@@ -9,6 +9,8 @@ import { useAuth } from "../../context/AuthContext";
 import { IoIosAddCircle } from "react-icons/io";
 import { useDebounce } from "use-debounce";
 import { useClub } from "../../context/ClubContext";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Club = () => {
   const [clubs, setClubs] = useState([]);
@@ -24,15 +26,11 @@ const Club = () => {
   const [selectedMembership, setSelectedMembership] = useState("");
   const navigate = useNavigate();
   const auth = useAuth();
+  const { handleApply } = useClub();
 
   const categories = [
-    "Sports",
-    "DSA",
-    "MERN",
-    "Cybersecurity",
-    "JAVA Developer",
-    "AI",
-    "Data Science",
+    "Sports", "DSA", "MERN", "Cybersecurity",
+    "JAVA Developer", "AI", "Data Science",
   ];
 
   const typeOptions = [
@@ -44,7 +42,7 @@ const Club = () => {
   const membershipOptions = [
     { label: "ALL", value: "" },
     { label: "Joined", value: "joined" },
-    {label:"Not Joined",value:"not_joined"},
+    { label: "Not Joined", value: "not_joined" },
   ];
 
   useEffect(() => {
@@ -65,24 +63,28 @@ const Club = () => {
         const response = await axios.get(
           `/club/getallclub?page=${pageQuery}&name=${nameQuery}&tag=${tagQuery}&type=${typeQuery}&membership=${membershipQuery}`
         );
-        setClubs(response.data.data.clubs);
-        setTotalPages(response.data.data.totalPages);
+        const { clubs, totalPages } = response.data.data;
 
-        if (pageQuery > response.data.data.totalPages) {
+        setClubs(clubs);
+        setTotalPages(totalPages);
+
+        if (pageQuery > totalPages) {
           setError("No Club Exist");
           setClubs([]);
+          toast.warning("No clubs found on this page.");
         } else {
           setError(null);
         }
       } catch (error) {
         console.error("Error fetching clubs:", error);
         setError("Failed to fetch clubs.");
+        toast.error("Failed to fetch clubs.");
       }
     };
+
     fetchClubs();
   }, [searchParams]);
 
-  // Update searchParams when filters change
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedSearch) params.set("name", debouncedSearch);
@@ -93,12 +95,19 @@ const Club = () => {
     setSearchParams(params);
   }, [debouncedSearch, selectedCategory, selectedType, selectedMembership, page]);
 
-   const {handleApply} = useClub();
-
-  
+  const applyToClub = async (clubId) => {
+    try {
+      await handleApply(clubId, auth.authUser._id);
+    } catch (error) {
+      console.error("Error applying to club:", error);
+      toast.error("Failed to apply to club.");
+    }
+  };
 
   return (
     <div className="p-6">
+      <ToastContainer position="top-right" autoClose={3000} theme="colored" />
+
       <motion.h1
         className="text-5xl font-bold text-center text-gray-800 drop-shadow-sm tracking-wide"
         initial={{ opacity: 0, y: 20 }}
@@ -120,9 +129,7 @@ const Club = () => {
       )}
 
       <div className="p-6 space-y-6">
-        {/* Top Filter Row */}
         <div className="flex flex-wrap justify-center items-center gap-4 text-center">
-          {/* Club Type Filter */}
           <Select
             placeholder="Select club type"
             value={selectedType}
@@ -132,7 +139,6 @@ const Club = () => {
             onChange={(value) => setSelectedType(value)}
           />
 
-          {/* Category Chips */}
           <div className="flex justify-center flex-1 min-w-[200px] overflow-x-auto whitespace-nowrap scrollbar-hide items-center">
             <div className="flex gap-3 w-max justify-center">
               {categories.map((cat) => (
@@ -151,7 +157,6 @@ const Club = () => {
             </div>
           </div>
 
-          {/* Show Filters Toggle */}
           <Button
             leftSection={<FiFilter size={16} />}
             onClick={() => setShowFilters(!showFilters)}
@@ -162,10 +167,8 @@ const Club = () => {
           </Button>
         </div>
 
-        {/* Filter Input Fields */}
         {showFilters && (
           <div className="mt-4 flex flex-wrap justify-center gap-4">
-            {/* Name Search */}
             <input
               type="text"
               value={search}
@@ -174,7 +177,6 @@ const Club = () => {
               onChange={(e) => setSearch(e.target.value)}
             />
 
-            {/* Membership Filter */}
             <Select
               placeholder="Membership"
               value={selectedMembership}
@@ -182,13 +184,11 @@ const Club = () => {
               w={160}
               styles={{ input: { borderRadius: "8px" } }}
               onChange={(value) => setSelectedMembership(value)}
-              className=""
             />
           </div>
         )}
       </div>
 
-      {/* Club Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mt-8">
         {clubs.length > 0 ? (
           clubs.map((club, index) => (
@@ -200,7 +200,7 @@ const Club = () => {
               tags={club.tags}
               status={club.status}
               id={club._id}
-              onApply={() => handleApply(club._id, auth.authUser._id)}
+              onApply={() => applyToClub(club._id)}
             />
           ))
         ) : (
@@ -210,7 +210,6 @@ const Club = () => {
         )}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <Pagination
           total={totalPages}

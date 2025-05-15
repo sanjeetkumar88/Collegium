@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import axios from "../utils/axios";
+import { toast } from "react-toastify";
 
 const ClubContext = createContext();
 
@@ -7,12 +8,10 @@ export const useClub = () => useContext(ClubContext);
 
 export const ClubProvider = ({ children }) => {
   const [clubData, setClubData] = useState(null);
-
-  // Separate refresh states for different tabs
   const [refreshApplicants, setRefreshApplicants] = useState(false);
   const [refreshMembers, setRefreshMembers] = useState(false);
   const [refreshLeaders, setRefreshLeaders] = useState(false);
-  const [applying,setApplying] = useState(false);
+  const [applying, setApplying] = useState(false);
 
   const toggleRefresh = (setter) => setter((prev) => !prev);
 
@@ -20,9 +19,11 @@ export const ClubProvider = ({ children }) => {
     try {
       const res = await axios.post(`/club/${id}/approveapplicants`, { applicantId });
       toggleRefresh(setRefreshApplicants);
+      toast.success("Applicant approved successfully!");
       return res.data;
     } catch (err) {
       console.error("Error approving applicant:", err);
+      toast.error("Failed to approve applicant.");
     }
   };
 
@@ -30,9 +31,11 @@ export const ClubProvider = ({ children }) => {
     try {
       const res = await axios.post(`/club/${id}/rejectapplicants`, { applicantId });
       toggleRefresh(setRefreshApplicants);
+      toast.success("Applicant rejected successfully.");
       return res.data;
     } catch (err) {
       console.error("Error rejecting applicant:", err);
+      toast.error("Failed to reject applicant.");
     }
   };
 
@@ -40,9 +43,11 @@ export const ClubProvider = ({ children }) => {
     try {
       const res = await axios.post(`/club/${id}/removemember`, { applicantId });
       toggleRefresh(setRefreshMembers);
+      toast.success("Member removed successfully.");
       return res.data;
     } catch (err) {
       console.error("Error removing member:", err);
+      toast.error("Failed to remove member.");
     }
   };
 
@@ -50,18 +55,22 @@ export const ClubProvider = ({ children }) => {
     try {
       const res = await axios.post(`/club/${id}/makecoleader`, { applicantId });
       toggleRefresh(setRefreshMembers);
+      toast.success("Co-leader assigned successfully.");
       return res.data;
     } catch (err) {
       console.error("Error making co-leader:", err);
+      toast.error("Failed to assign co-leader.");
     }
   };
 
   const makeLeader = async (id, applicantId) => {
     try {
       const res = await axios.post(`/club/${id}/makeleader`, { applicantId });
+      toast.success("Leader assigned successfully.");
       return res.data;
     } catch (err) {
       console.error("Error making leader:", err);
+      toast.error("Failed to assign leader.");
     }
   };
 
@@ -69,25 +78,27 @@ export const ClubProvider = ({ children }) => {
     try {
       const res = await axios.post(`/club/${id}/removecoleader`, { applicantId });
       toggleRefresh(setRefreshLeaders);
+      toast.success("Co-leader removed successfully.");
       return res.data;
     } catch (err) {
       console.error("Error removing co-leader:", err);
+      toast.error("Failed to remove co-leader.");
     }
   };
 
-  const handleApply = async (id,userId) =>{
+  const handleApply = async (id, userId) => {
     setApplying(true);
     try {
-      const response = await axios.post(`/club/${id}/joinclub`, {
-        userId
-      });
+      const response = await axios.post(`/club/${id}/joinclub`, { userId });
+      toast.success("Applied to club successfully.");
       return response.data;
     } catch (err) {
-      alert(err.response?.data?.message || "Something went wrong");
+      console.error("Error applying to club:", err);
+      toast.error(err.response?.data?.message || "Failed to apply to club.");
     } finally {
       setApplying(false);
     }
-  }
+  };
 
   return (
     <ClubContext.Provider

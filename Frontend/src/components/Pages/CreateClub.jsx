@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { MultiSelect } from "@mantine/core";
 import axios from "../../utils/axios";
+import { toast } from "react-toastify";  // <-- import toast
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -16,7 +17,7 @@ const CreateClub = () => {
     name: "",
     description: "",
     leader: "",
-    mentor: selectedMentors,
+    mentor: [],
   });
 
   useEffect(() => {
@@ -58,10 +59,20 @@ const CreateClub = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = { ...formdata, mentor: selectedMentors }; 
+      const data = { ...formdata, mentor: selectedMentors };
       const res = await axios.post('/club/createclub', data);
-      console.log('Club created successfully:', res.data);
+      toast.success('Club created successfully!');
+
+      // Reset form & mentors selection
+      setFormData({
+        name: "",
+        description: "",
+        leader: "",
+        mentor: [],
+      });
+      setSelectedMentors([]);
     } catch (error) {
+      toast.error('Failed to create club. Please try again.');
       console.error('Error creating club:', error);
     }
   };

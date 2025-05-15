@@ -7,15 +7,24 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import EventCard from "../Cardcomp/EventCard";
 import { useAuth } from "../../context/AuthContext";
 import { useFetchClubLeader } from "../../CustomHooks/useFetchClubLeader";
+import Header from "../EventDashboardComp/Header";
 
 function Events() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // States initialized from URL
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
-  const [selectedType, setSelectedType] = useState(searchParams.get("privacy") || "");
-  const [selectedMembership, setSelectedMembership] = useState(searchParams.get("membership") || "");
-  const [selectedMode, setSelectedMode] = useState(searchParams.get("mode") || "");
+  const [selectedCategory, setSelectedCategory] = useState(
+    searchParams.get("category") || ""
+  );
+  const [selectedType, setSelectedType] = useState(
+    searchParams.get("privacy") || ""
+  );
+  const [selectedMembership, setSelectedMembership] = useState(
+    searchParams.get("membership") || ""
+  );
+  const [selectedMode, setSelectedMode] = useState(
+    searchParams.get("mode") || ""
+  );
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [showFilters, setShowFilters] = useState(false);
   const [events, setEvents] = useState([]);
@@ -24,10 +33,16 @@ function Events() {
   const limit = 6;
   const user = useAuth();
   const navigate = useNavigate();
-  const {isLeader} = useFetchClubLeader();
+  const { isLeader } = useFetchClubLeader();
 
   const categories = [
-    "Sports", "DSA", "MERN", "Cybersecurity", "JAVA Developer", "AI", "Data Science"
+    "Sports",
+    "DSA",
+    "MERN",
+    "Cybersecurity",
+    "JAVA Developer",
+    "AI",
+    "Data Science",
   ];
 
   const typeOptions = [
@@ -68,7 +83,14 @@ function Events() {
     });
 
     setSearchParams(cleanedParams);
-  }, [selectedCategory, selectedType, selectedMembership, selectedMode, search, page]);
+  }, [
+    selectedCategory,
+    selectedType,
+    selectedMembership,
+    selectedMode,
+    search,
+    page,
+  ]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -93,59 +115,26 @@ function Events() {
     };
 
     fetchEvents();
-  }, [search, selectedCategory, selectedType, selectedMode, selectedMembership, page]);
+  }, [
+    search,
+    selectedCategory,
+    selectedType,
+    selectedMode,
+    selectedMembership,
+    page,
+  ]);
 
   return (
     <div className="p-6">
-      {(user.authUser?.role === "admin" || user.authUser?.role === "teacher" || isLeader) && (
-  <div className="flex justify-end mb-4 gap-2">
-    <Button
-      onClick={() => navigate("/events/createevent")}
-      variant="filled"
-      color="blue"
-      radius="md"
-    >
-      + Create Event
-    </Button>
-
-    <Button
-    onClick={() => navigate("/events/dashboard")}
-      variant="filled"
-      color="blue"
-      radius="md"
-    >
-      Dashboard
-    </Button>
-
-    <Button
-    onClick={() => navigate("/events/rsvp")}
-      variant="filled"
-      color="blue"
-      radius="md"
-    >
-      RSVP
-    </Button>
-    <Button
-        onClick={() => navigate("/events/waitlist-users")}
-          variant="filled"
-          color="blue"
-          radius="md"
-        >
-          Request
-        </Button>
-    <Button
-    onClick={() => navigate("/events/createdevent")}
-      variant="filled"
-      color="blue"
-      radius="md"
-    >
-      Your Events
-    </Button>
-  </div>
-)}
+      {(user.authUser?.role === "admin" ||
+        user.authUser?.role === "teacher" ||
+        isLeader) && (
+        <Header dashboard={true} rsvp={true} request={true} yourEvent={true} />
+      )}
 
       {/* Page Heading */}
-      <motion.h1 className="text-5xl font-bold text-center text-gray-800 drop-shadow-sm tracking-wide mb-8"
+      <motion.h1
+        className="text-5xl font-bold text-center text-gray-800 drop-shadow-sm tracking-wide mb-8"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
@@ -154,7 +143,8 @@ function Events() {
       </motion.h1>
 
       {/* Filter Row */}
-      <motion.div className="flex flex-wrap justify-center items-center gap-4 text-center mb-6"
+      <motion.div
+        className="flex flex-wrap justify-center items-center gap-4 text-center mb-6"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
@@ -172,7 +162,8 @@ function Events() {
         <div className="flex justify-center flex-1 min-w-[200px] overflow-x-auto whitespace-nowrap scrollbar-hide items-center">
           <div className="flex gap-3 w-max justify-center">
             {categories.map((cat, i) => (
-              <motion.div key={cat}
+              <motion.div
+                key={cat}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
@@ -204,7 +195,8 @@ function Events() {
 
       {/* Additional Filters */}
       {showFilters && (
-        <motion.div className="mt-4 flex flex-wrap justify-center gap-4 mb-6"
+        <motion.div
+          className="mt-4 flex flex-wrap justify-center gap-4 mb-6"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
@@ -240,7 +232,8 @@ function Events() {
       {/* Event Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {events.length === 0 ? (
-          <motion.p className="text-center col-span-full text-gray-500 mt-8"
+          <motion.p
+            className="text-center col-span-full text-gray-500 mt-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
@@ -248,7 +241,8 @@ function Events() {
           </motion.p>
         ) : (
           events.map((event, i) => (
-            <motion.div key={event._id}
+            <motion.div
+              key={event._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
@@ -267,7 +261,8 @@ function Events() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <motion.div className="pt-8 flex justify-center"
+        <motion.div
+          className="pt-8 flex justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
