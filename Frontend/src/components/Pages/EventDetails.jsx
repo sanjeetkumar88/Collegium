@@ -150,6 +150,42 @@ const handleRegister = async () => {
     navigate(`/events/${id}/edit`);
   };
 
+  const handleDownloadXLS = async () => {
+  try {
+    const response = await axios.get(`/devevent/${id}/summary/download`, {
+      responseType: 'blob', // important to get binary data as blob
+      withCredentials: true,
+    });
+
+    // Create a URL for the file blob
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.href = url;
+
+    // Use filename from content-disposition header or fallback name
+    const contentDisposition = response.headers['content-disposition'];
+    let fileName = 'event-summary.xlsx';
+    if (contentDisposition) {
+      const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+      if (fileNameMatch.length === 2) fileName = fileNameMatch[1];
+    }
+
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+
+    // Trigger the download
+    link.click();
+
+    // Clean up
+    link.parentNode.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Failed to download file:', error);
+  }
+};
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
@@ -183,6 +219,15 @@ const handleRegister = async () => {
             >
               <FaTrashAlt />
               Delete Event
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleDownloadXLS}
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold"
+            >
+              <FaTrashAlt />
+              Download XLS
             </motion.button>
           </>
         )}

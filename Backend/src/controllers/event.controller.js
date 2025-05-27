@@ -1188,54 +1188,70 @@ export const downloadEventSummaryXLS = async (req, res) => {
   try {
     const { eventId } = req.params;
 
-    // Fetch event with creator field
     const event = await Event.findById(eventId)
-      .populate("registeredUsers.userId", "name email")
-      .populate("waitlistedUsers.userId", "name email")
-      .populate("createdBy", "_id"); // ensure createdBy is accessible
+      .populate("registeredUsers.user", "username fullName email")
+      .populate("waitlist.user", "username fullName email")
+      .populate("createdBy", "_id");
 
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    // Authorization check
     const userId = req.user.id;
     const userRole = req.user.role;
-
     if (userRole !== "admin" && String(event.createdBy?._id) !== userId) {
       return res.status(403).json({ message: "Unauthorized to download summary" });
     }
 
-    const ExcelJS = await import("exceljs"); // dynamic import for ESM compatibility
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Event Summary");
 
-    // Title
-    worksheet.addRow([`Event Summary: ${event.title}`]);
+    const headerStyle = {
+      font: { bold: true, color: { argb: "FF000000" } },
+      alignment: { horizontal: "center" },
+    };
+
+    const titleRow = worksheet.addRow([`Event Summary: ${event.title}`]);
+    titleRow.font = { size: 16, bold: true };
     worksheet.addRow([]);
 
-    // Stats
-    worksheet.addRow(["Total Registered Users", event.registeredUsers.length]);
-    worksheet.addRow(["Total Waitlisted Users", event.waitlistedUsers.length]);
+    worksheet.addRow(["Total Registered Users", (event.registeredUsers || []).length]);
+    worksheet.addRow(["Total Waitlisted Users", (event.waitlist || []).length]);
     worksheet.addRow(["Max Capacity", event.maxCapacity || "N/A"]);
-    worksheet.addRow(["Date", event.date?.toDateString() || "N/A"]);
+    worksheet.addRow([
+      "Date",
+      event.date
+        ? new Date(event.date).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        : "N/A",
+    ]);
     worksheet.addRow([]);
 
-    // Registered Users
-    worksheet.addRow(["Registered Users"]);
-    worksheet.addRow(["Name", "Email"]);
-    event.registeredUsers.forEach((entry) => {
-      const user = entry.userId;
-      worksheet.addRow([user?.name || "N/A", user?.email || "N/A"]);
+    const regHeader = worksheet.addRow(["Registered Users"]);
+    regHeader.font = { bold: true };
+    worksheet.addRow([]);
+    const regColumns = worksheet.addRow(["Username", "Name", "Email"]);
+    regColumns.eachCell((cell) => (cell.style = headerStyle));
+
+    (event.registeredUsers || []).forEach((entry) => {
+      const user = entry.user;
+      
+      worksheet.addRow([user?.username || "N/A", user?.fullName || "N/A", user?.email || "N/A"]);
     });
 
-    // Waitlisted Users
     worksheet.addRow([]);
-    worksheet.addRow(["Waitlisted Users"]);
-    worksheet.addRow(["Name", "Email"]);
-    event.waitlistedUsers.forEach((entry) => {
-      const user = entry.userId;
-      worksheet.addRow([user?.name || "N/A", user?.email || "N/A"]);
+    const waitHeader = worksheet.addRow(["Waitlisted Users"]);
+    waitHeader.font = { bold: true };
+    worksheet.addRow([]);
+    const waitColumns = worksheet.addRow(["Username", "Name", "Email"]);
+    waitColumns.eachCell((cell) => (cell.style = headerStyle));
+
+    (event.waitlist || []).forEach((entry) => {
+      const user = entry.user;
+      worksheet.addRow([user?.username || "N/A", user?.fullName || "N/A", user?.email || "N/A"]);
     });
 
     worksheet.columns.forEach((col) => (col.width = 30));
@@ -1256,6 +1272,8 @@ export const downloadEventSummaryXLS = async (req, res) => {
     res.status(500).json({ message: "Failed to generate event summary." });
   }
 };
+
+
 
 export const removeMember = asyncHandler(async (req, res) => {
   try {
