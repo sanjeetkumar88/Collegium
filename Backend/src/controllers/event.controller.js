@@ -8,7 +8,6 @@ import { Event } from "../models/event.model.js";
 import mongoose from "mongoose";
 import { sendMail } from "../utils/sendMail.js";
 
-
 import QRCode from "qrcode";
 import nodemailer from "nodemailer";
 
@@ -71,7 +70,10 @@ const createEvents = async (req, res) => {
 
     // Phone number validation (10 digits only)
     if (!organiserPhone || organiserPhone.length !== 10) {
-      throw new ApiError(400, "Invalid organiser phone number. Must be 10 digits");
+      throw new ApiError(
+        400,
+        "Invalid organiser phone number. Must be 10 digits"
+      );
     }
 
     // Club leader check
@@ -96,7 +98,10 @@ const createEvents = async (req, res) => {
       );
     }
 
-    if (medium === "offline" && (!Array.isArray(location) || location.length < 3)) {
+    if (
+      medium === "offline" &&
+      (!Array.isArray(location) || location.length < 3)
+    ) {
       throw new ApiError(
         400,
         "For offline events, location must include [venue, lat, lng]"
@@ -165,20 +170,25 @@ const createEvents = async (req, res) => {
 
     // Handling ApiError explicitly
     if (error instanceof ApiError) {
-      return res.status(statusCode).json(new ApiResponse(statusCode, null, message));
+      return res
+        .status(statusCode)
+        .json(new ApiResponse(statusCode, null, message));
     }
 
     // Handle Mongoose ValidationError
     if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((e) => e.message);
-      return res.status(400).json(new ApiResponse(400, null, "Validation failed", errors));
+      return res
+        .status(400)
+        .json(new ApiResponse(400, null, "Validation failed", errors));
     }
 
     // Catch any unhandled error
-    return res.status(statusCode).json(new ApiResponse(statusCode, null, message));
+    return res
+      .status(statusCode)
+      .json(new ApiResponse(statusCode, null, message));
   }
 };
-
 
 const getAllEvents = async (req, res) => {
   try {
@@ -190,7 +200,6 @@ const getAllEvents = async (req, res) => {
       participationStatus,
       page = 1,
       limit = 10,
-
     } = req.query;
 
     const userId = req.user?._id;
@@ -244,13 +253,19 @@ const getAllEvents = async (req, res) => {
             ? {
                 $cond: [
                   {
-                    $in: [new mongoose.Types.ObjectId(userId), "$registeredUsers.user"],
+                    $in: [
+                      new mongoose.Types.ObjectId(userId),
+                      "$registeredUsers.user",
+                    ],
                   },
                   "joined",
                   {
                     $cond: [
                       {
-                        $in: [new mongoose.Types.ObjectId(userId), "$invitedUsers"],
+                        $in: [
+                          new mongoose.Types.ObjectId(userId),
+                          "$invitedUsers",
+                        ],
                       },
                       "requested",
                       "not-joined",
@@ -263,7 +278,9 @@ const getAllEvents = async (req, res) => {
       },
 
       // Optional filter by user participation status
-      ...(participationStatus ? [{ $match: { userStatus: participationStatus } }] : []),
+      ...(participationStatus
+        ? [{ $match: { userStatus: participationStatus } }]
+        : []),
 
       // Select only required fields
       {
@@ -271,7 +288,7 @@ const getAllEvents = async (req, res) => {
           title: 1,
           image: 1,
           startDate: 1,
-          endDate: 1,  // Include endDate if you want to use it later in the client
+          endDate: 1, // Include endDate if you want to use it later in the client
           category: 1,
         },
       },
@@ -284,7 +301,9 @@ const getAllEvents = async (req, res) => {
     const events = await Event.aggregate(pipeline);
 
     // Count total (without skip & limit)
-    const countPipeline = pipeline.filter(stage => !stage.$skip && !stage.$limit);
+    const countPipeline = pipeline.filter(
+      (stage) => !stage.$skip && !stage.$limit
+    );
     countPipeline.push({ $count: "total" });
     const totalResult = await Event.aggregate(countPipeline);
     const total = totalResult[0]?.total || 0;
@@ -302,30 +321,100 @@ const getAllEvents = async (req, res) => {
   }
 };
 
+// const getEventDetail = asyncHandler(async (req, res) => {
+//   const eventId = req.params.id;
+
+//   if (!eventId.match(/^[0-9a-fA-F]{24}$/)) {
+//     return res.status(400).json({ message: "Invalid event ID" });
+//   }
+
+//   try {
+
+//     const event = await Event.findById(eventId).populate("createdBy", "name email _id");
+
+//     if (!event) {
+//       return res.status(404).json({ message: "Event not found" });
+//     }
+
+//     const response = {
+//       _id:event._id,
+//       clubId: event.clubId,
+//       title: event.title,
+//       description: event.description,
+//       category: event.category,
+//       status: event.status,
+//       startDateTime: event.startDate,
+//       endDateTime: event.endDate,
+//       duration: event.duration,
+//       acceptingRsvp: event.acceptingRsvp,
+//       acceptingAttendance: event.acceptingAttendance,
+//       maxParticipants: event.maxParticipants,
+//       privacy: event.privacy,
+//       organiserName: event.organiser.name,
+//       organiserEmail: event.organiser.email,
+//       organiserPhone: event.organiser.phone,
+//       price: event.price,
+//       language: event.language,
+//       tnc: event.tnc,
+//       adminNotes: event.adminNotes,
+//       medium: event.medium,
+//       meet: event.meet, // [link, id, password]
+//       location: event.location, // [venue, latitude, longitude]
+//       image: event.image,
+//       createdBy: event.createdBy, // populated user object
+//     };
+
+//     return res.status(200).json(response);
+
+//   } catch (error) {
+//     console.error(error);  // Log the error for debugging
+//     // Return a 500 server error if any unexpected error occurs
+//     return res.status(500).json({ message: "An unexpected error occurred" });
+//   }
+// });
 
 const getEventDetail = asyncHandler(async (req, res) => {
   const eventId = req.params.id;
-  
 
-  
   if (!eventId.match(/^[0-9a-fA-F]{24}$/)) {
     return res.status(400).json({ message: "Invalid event ID" });
   }
 
   try {
-    
-    const event = await Event.findById(eventId).populate("createdBy", "name email _id");
+    const event = await Event.findById(eventId)
+      .populate("createdBy", "name email _id")
+      .populate("registeredUsers.user", "_id")
+      .populate("waitlist.user", "_id");
 
-    
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
 
+    let registrationStatus = "not-registered";
+    const userId = req.user?.id;
 
-    
-    
+    if (userId) {
+      // Check if the user is registered or waitlisted
+
+      if (event.registeredUsers?.length) {
+        const isRegistered = event.registeredUsers.some(
+          (entry) => String(entry.user._id) === String(userId)
+        );
+        if (isRegistered) registrationStatus = "joined";
+      }
+
+      if (registrationStatus === "not-registered" && event.waitlist?.length) {
+        const isWaitlisted = event.waitlist.some(
+          (entry) => String(entry.user._id) === String(userId)
+        );
+        if (isWaitlisted) registrationStatus = "requested";
+      }
+
+      
+    }
+
     const response = {
-      _id:event._id,
+      _id: event._id,
       clubId: event.clubId,
       title: event.title,
       description: event.description,
@@ -347,20 +436,18 @@ const getEventDetail = asyncHandler(async (req, res) => {
       adminNotes: event.adminNotes,
       medium: event.medium,
       meet: event.meet, // [link, id, password]
-      location: event.location, // [venue, latitude, longitude]
+      location: event.location,
       image: event.image,
-      createdBy: event.createdBy, // populated user object
+      createdBy: event.createdBy,
+      registrationStatus, // added field
     };
 
     return res.status(200).json(response);
-
   } catch (error) {
-    console.error(error);  // Log the error for debugging
-    // Return a 500 server error if any unexpected error occurs
+    console.error(error);
     return res.status(500).json({ message: "An unexpected error occurred" });
   }
 });
-
 
 const deleteEvent = asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id);
@@ -371,10 +458,7 @@ const deleteEvent = asyncHandler(async (req, res) => {
   }
 
   // Only admin or event creator can delete
-  if (
-    req.user.role !== "admin" &&
-    event.createdBy.toString() !== req.user.id
-  ) {
+  if (req.user.role !== "admin" && event.createdBy.toString() !== req.user.id) {
     res.status(403);
     throw new Error("Not authorized to delete this event");
   }
@@ -414,7 +498,13 @@ const editEvents = async (req, res) => {
     const userId = req.user._id;
 
     // Validate required fields
-    if (!title || !startDateTime || !organiserName || !organiserEmail || !organiserPhone) {
+    if (
+      !title ||
+      !startDateTime ||
+      !organiserName ||
+      !organiserEmail ||
+      !organiserPhone
+    ) {
       throw new ApiError(400, "Required fields missing");
     }
 
@@ -423,7 +513,10 @@ const editEvents = async (req, res) => {
     if (!event) throw new ApiError(404, "Event not found");
 
     // Authorization check
-    if (req.user.role !== "admin" && event.createdBy.toString() !== userId.toString()) {
+    if (
+      req.user.role !== "admin" &&
+      event.createdBy.toString() !== userId.toString()
+    ) {
       throw new ApiError(403, "Not authorized to edit this event");
     }
 
@@ -434,7 +527,10 @@ const editEvents = async (req, res) => {
 
       const objectUserId = new mongoose.Types.ObjectId(userId);
       if (!club.leader.equals(objectUserId)) {
-        throw new ApiError(403, "Only Club Leaders can create/edit events for this club");
+        throw new ApiError(
+          403,
+          "Only Club Leaders can create/edit events for this club"
+        );
       }
 
       event.club = clubId;
@@ -443,22 +539,28 @@ const editEvents = async (req, res) => {
     // Medium-specific validation
     if (medium === "online") {
       if (!Array.isArray(meet) || meet.length < 3) {
-        throw new ApiError(400, "For online events, meet must include [link, id, password]");
+        throw new ApiError(
+          400,
+          "For online events, meet must include [link, id, password]"
+        );
       }
       event.meet = meet;
       event.location = [];
     } else if (medium === "offline") {
       if (!Array.isArray(location) || location.length < 3) {
-        throw new ApiError(400, "For offline events, location must include [venue, lat, lng]");
+        throw new ApiError(
+          400,
+          "For offline events, location must include [venue, lat, lng]"
+        );
       }
       event.location = location;
       event.meet = [];
     }
 
-    if(price < 0 || !price){
+    if (price < 0 || !price) {
       price = 0;
     }
-    if(maxParticipants <0 || !maxParticipants){
+    if (maxParticipants < 0 || !maxParticipants) {
       maxParticipants = 0;
     }
 
@@ -471,7 +573,8 @@ const editEvents = async (req, res) => {
     event.endDate = endDateTime ? new Date(endDateTime) : undefined;
     event.duration = duration;
     event.acceptingRsvp = acceptingRsvp === "true" || acceptingRsvp === true;
-    event.acceptingAttendance = acceptingAttendance === "true" || acceptingAttendance === true;
+    event.acceptingAttendance =
+      acceptingAttendance === "true" || acceptingAttendance === true;
     event.maxParticipants = maxParticipants;
     event.privacy = privacy;
     event.organiser = {
@@ -491,12 +594,14 @@ const editEvents = async (req, res) => {
   } catch (error) {
     console.error("Edit Event Error:", error);
     const statusCode = error.statusCode || 500;
-    res.status(statusCode).json({ message: error.message || "Something went wrong" });
+    res
+      .status(statusCode)
+      .json({ message: error.message || "Something went wrong" });
   }
 };
 
 export const registerUser = async (req, res) => {
-  const eventId  = req.params.id;
+  const eventId = req.params.id;
   const userId = req.user._id;
 
   try {
@@ -507,7 +612,9 @@ export const registerUser = async (req, res) => {
     }
 
     if (!event.acceptingRsvp) {
-      return res.status(400).json({ message: "RSVP is closed for this event." });
+      return res
+        .status(400)
+        .json({ message: "RSVP is closed for this event." });
     }
 
     const alreadyRegistered = event.registeredUsers.some(
@@ -525,7 +632,8 @@ export const registerUser = async (req, res) => {
     }
 
     const isUnlimited = event.maxParticipants == null;
-    const hasSpace = isUnlimited || event.registeredUsers.length < event.maxParticipants;
+    const hasSpace =
+      isUnlimited || event.registeredUsers.length < event.maxParticipants;
     const isFree = !event.price || event.price === 0;
 
     if (isFree) {
@@ -549,7 +657,9 @@ export const registerUser = async (req, res) => {
         event.waitlist.push({ user: userId });
       }
     } else {
-      return res.status(400).json({ message: "This event requires payment. Use payment route." });
+      return res
+        .status(400)
+        .json({ message: "This event requires payment. Use payment route." });
     }
 
     await event.save();
@@ -583,11 +693,17 @@ export const registerUserWithPayment = async (req, res) => {
     }
 
     if (!event.acceptingRsvp) {
-      return res.status(400).json({ message: "RSVP is closed for this event." });
+      return res
+        .status(400)
+        .json({ message: "RSVP is closed for this event." });
     }
 
     if (!event.price || event.price === 0) {
-      return res.status(400).json({ message: "This event is free. Use the free registration route." });
+      return res
+        .status(400)
+        .json({
+          message: "This event is free. Use the free registration route.",
+        });
     }
 
     const alreadyRegistered = event.registeredUsers.some(
@@ -605,10 +721,13 @@ export const registerUserWithPayment = async (req, res) => {
     }
 
     const isUnlimited = event.maxParticipants == null;
-    const hasSpace = isUnlimited || event.registeredUsers.length < event.maxParticipants;
+    const hasSpace =
+      isUnlimited || event.registeredUsers.length < event.maxParticipants;
 
     if (!hasSpace) {
-      return res.status(400).json({ message: "Event is full. Cannot register." });
+      return res
+        .status(400)
+        .json({ message: "Event is full. Cannot register." });
     }
 
     if (paymentStatus !== "completed") {
@@ -649,30 +768,17 @@ export const dashboard = asyncHandler(async (req, res) => {
       {
         $match: {
           createdBy: userId,
-           
-        }
+        },
       },
       {
         $facet: {
           total: [{ $count: "count" }],
-          private: [
-            { $match: { privacy: "private" } },
-            { $count: "count" }
-          ],
-          public: [
-            { $match: { privacy: "public" } },
-            { $count: "count" }
-          ],
-          online: [
-            { $match: { medium: "online" } },
-            { $count: "count" }
-          ],
-          offline: [
-            { $match: { medium: "offline" } },
-            { $count: "count" }
-          ]
-        }
-      }
+          private: [{ $match: { privacy: "private" } }, { $count: "count" }],
+          public: [{ $match: { privacy: "public" } }, { $count: "count" }],
+          online: [{ $match: { medium: "online" } }, { $count: "count" }],
+          offline: [{ $match: { medium: "offline" } }, { $count: "count" }],
+        },
+      },
     ]);
 
     const data = result[0];
@@ -686,7 +792,6 @@ export const dashboard = asyncHandler(async (req, res) => {
     };
 
     res.status(200).json(response);
-
   } catch (error) {
     console.error("Error in fetching data", error);
     res.status(500).json({ message: "Internal server error." });
@@ -767,7 +872,9 @@ export const getCreatedEvent = asyncHandler(async (req, res) => {
     const events = await Event.aggregate(pipeline);
 
     // Total count for pagination
-    const countPipeline = pipeline.filter(stage => !stage.$skip && !stage.$limit);
+    const countPipeline = pipeline.filter(
+      (stage) => !stage.$skip && !stage.$limit
+    );
     countPipeline.push({ $count: "total" });
     const totalResult = await Event.aggregate(countPipeline);
     const total = totalResult[0]?.total || 0;
@@ -789,11 +896,7 @@ export const getRsvps = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
   try {
-    const {
-      page = 1,
-      limit = 10,
-      title = "",
-    } = req.query;
+    const { page = 1, limit = 10, title = "" } = req.query;
 
     const skip = (page - 1) * limit;
 
@@ -802,19 +905,19 @@ export const getRsvps = asyncHandler(async (req, res) => {
         $match: {
           createdBy: new mongoose.Types.ObjectId(userId),
           title: { $regex: title, $options: "i" },
-        }
+        },
       },
       {
         $project: {
           title: 1,
           startDate: 1,
           endDate: 1,
-          registeredCount: { $size: { $ifNull: ["$registeredUsers", []] } }
-        }
+          registeredCount: { $size: { $ifNull: ["$registeredUsers", []] } },
+        },
       },
       { $sort: { startDate: -1 } },
       { $skip: parseInt(skip) },
-      { $limit: parseInt(limit) }
+      { $limit: parseInt(limit) },
     ]);
 
     const totalResult = await Event.aggregate([
@@ -822,9 +925,9 @@ export const getRsvps = asyncHandler(async (req, res) => {
         $match: {
           createdBy: new mongoose.Types.ObjectId(userId),
           title: { $regex: title, $options: "i" },
-        }
+        },
       },
-      { $count: "total" }
+      { $count: "total" },
     ]);
 
     const total = totalResult[0]?.total || 0;
@@ -834,9 +937,8 @@ export const getRsvps = asyncHandler(async (req, res) => {
       limit: parseInt(limit),
       total,
       totalPages: Math.ceil(total / limit),
-      data: events
+      data: events,
     });
-
   } catch (error) {
     console.error("Error fetching RSVP counts:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -847,11 +949,7 @@ export const getRequest = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
   try {
-    const {
-      page = 1,
-      limit = 10,
-      title = "",
-    } = req.query;
+    const { page = 1, limit = 10, title = "" } = req.query;
 
     const skip = (page - 1) * limit;
 
@@ -860,19 +958,19 @@ export const getRequest = asyncHandler(async (req, res) => {
         $match: {
           createdBy: new mongoose.Types.ObjectId(userId),
           title: { $regex: title, $options: "i" },
-        }
+        },
       },
       {
         $project: {
           title: 1,
           startDate: 1,
           endDate: 1,
-          requestCount: { $size: { $ifNull: ["$waitlist", []] } }
-        }
+          requestCount: { $size: { $ifNull: ["$waitlist", []] } },
+        },
       },
       { $sort: { startDate: -1 } },
       { $skip: parseInt(skip) },
-      { $limit: parseInt(limit) }
+      { $limit: parseInt(limit) },
     ]);
 
     const totalResult = await Event.aggregate([
@@ -880,9 +978,9 @@ export const getRequest = asyncHandler(async (req, res) => {
         $match: {
           createdBy: new mongoose.Types.ObjectId(userId),
           title: { $regex: title, $options: "i" },
-        }
+        },
       },
-      { $count: "total" }
+      { $count: "total" },
     ]);
 
     const total = totalResult[0]?.total || 0;
@@ -892,9 +990,8 @@ export const getRequest = asyncHandler(async (req, res) => {
       limit: parseInt(limit),
       total,
       totalPages: Math.ceil(total / limit),
-      data: events
+      data: events,
     });
-
   } catch (error) {
     console.error("Error fetching RSVP counts:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -924,7 +1021,8 @@ export const getRegisteredUsers = asyncHandler(async (req, res) => {
 
     if (!isCreator && !isAdmin) {
       return res.status(403).json({
-        message: "Access denied. Only the event creator or an admin can view registered users.",
+        message:
+          "Access denied. Only the event creator or an admin can view registered users.",
       });
     }
 
@@ -965,7 +1063,12 @@ export const downloadRegisteredUsersXLS = asyncHandler(async (req, res) => {
     const isAdmin = userRole === "admin";
 
     if (!isCreator && !isAdmin) {
-      return res.status(403).json({ message: "Access denied. Only the event creator or an admin can download this list." });
+      return res
+        .status(403)
+        .json({
+          message:
+            "Access denied. Only the event creator or an admin can download this list.",
+        });
     }
 
     const workbook = new ExcelJS.Workbook();
@@ -985,8 +1088,14 @@ export const downloadRegisteredUsersXLS = asyncHandler(async (req, res) => {
       });
     });
 
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", `attachment; filename=registered_users_${eventId}.xlsx`);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=registered_users_${eventId}.xlsx`
+    );
 
     await workbook.xlsx.write(res);
     res.end();
@@ -1019,7 +1128,8 @@ export const getWaitlistedUsers = asyncHandler(async (req, res) => {
 
     if (!isCreator && !isAdmin) {
       return res.status(403).json({
-        message: "Access denied. Only the event creator or an admin can view the waitlist.",
+        message:
+          "Access denied. Only the event creator or an admin can view the waitlist.",
       });
     }
 
@@ -1060,7 +1170,12 @@ export const downloadWaitlistedUsersXLS = asyncHandler(async (req, res) => {
     const isAdmin = userRole === "admin";
 
     if (!isCreator && !isAdmin) {
-      return res.status(403).json({ message: "Access denied. Only the event creator or an admin can download this list." });
+      return res
+        .status(403)
+        .json({
+          message:
+            "Access denied. Only the event creator or an admin can download this list.",
+        });
     }
 
     const workbook = new ExcelJS.Workbook();
@@ -1080,8 +1195,14 @@ export const downloadWaitlistedUsersXLS = asyncHandler(async (req, res) => {
       });
     });
 
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", `attachment; filename=waitlisted_users_${eventId}.xlsx`);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=waitlisted_users_${eventId}.xlsx`
+    );
 
     await workbook.xlsx.write(res);
     res.end();
@@ -1097,12 +1218,17 @@ export const updateWaitlistStatus = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id;
   const userRole = req.user.role;
 
-  if (!mongoose.Types.ObjectId.isValid(eventId) || !mongoose.Types.ObjectId.isValid(userId)) {
+  if (
+    !mongoose.Types.ObjectId.isValid(eventId) ||
+    !mongoose.Types.ObjectId.isValid(userId)
+  ) {
     return res.status(400).json({ message: "Invalid event ID or user ID." });
   }
 
   if (!["accept", "reject"].includes(action)) {
-    return res.status(400).json({ message: "Invalid action. Must be 'accept' or 'reject'." });
+    return res
+      .status(400)
+      .json({ message: "Invalid action. Must be 'accept' or 'reject'." });
   }
 
   const event = await Event.findById(eventId)
@@ -1117,7 +1243,12 @@ export const updateWaitlistStatus = asyncHandler(async (req, res) => {
   const isAdmin = userRole === "admin";
 
   if (!isCreator && !isAdmin) {
-    return res.status(403).json({ message: "Access denied. Only the event creator or an admin can update waitlist." });
+    return res
+      .status(403)
+      .json({
+        message:
+          "Access denied. Only the event creator or an admin can update waitlist.",
+      });
   }
 
   const waitlistEntry = event.waitlist.find(
@@ -1159,7 +1290,9 @@ export const updateWaitlistStatus = asyncHandler(async (req, res) => {
         `,
       });
 
-      return res.status(200).json({ message: "User accepted and notified via email." });
+      return res
+        .status(200)
+        .json({ message: "User accepted and notified via email." });
     }
 
     if (action === "reject") {
@@ -1176,11 +1309,15 @@ export const updateWaitlistStatus = asyncHandler(async (req, res) => {
         `,
       });
 
-      return res.status(200).json({ message: "User rejected and notified via email." });
+      return res
+        .status(200)
+        .json({ message: "User rejected and notified via email." });
     }
   } catch (err) {
     console.error("Error processing waitlist update:", err);
-    return res.status(500).json({ message: "An error occurred while processing the request." });
+    return res
+      .status(500)
+      .json({ message: "An error occurred while processing the request." });
   }
 });
 
@@ -1200,7 +1337,9 @@ export const downloadEventSummaryXLS = async (req, res) => {
     const userId = req.user.id;
     const userRole = req.user.role;
     if (userRole !== "admin" && String(event.createdBy?._id) !== userId) {
-      return res.status(403).json({ message: "Unauthorized to download summary" });
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to download summary" });
     }
 
     const workbook = new ExcelJS.Workbook();
@@ -1215,7 +1354,10 @@ export const downloadEventSummaryXLS = async (req, res) => {
     titleRow.font = { size: 16, bold: true };
     worksheet.addRow([]);
 
-    worksheet.addRow(["Total Registered Users", (event.registeredUsers || []).length]);
+    worksheet.addRow([
+      "Total Registered Users",
+      (event.registeredUsers || []).length,
+    ]);
     worksheet.addRow(["Total Waitlisted Users", (event.waitlist || []).length]);
     worksheet.addRow(["Max Capacity", event.maxCapacity || "N/A"]);
     worksheet.addRow([
@@ -1238,8 +1380,12 @@ export const downloadEventSummaryXLS = async (req, res) => {
 
     (event.registeredUsers || []).forEach((entry) => {
       const user = entry.user;
-      
-      worksheet.addRow([user?.username || "N/A", user?.fullName || "N/A", user?.email || "N/A"]);
+
+      worksheet.addRow([
+        user?.username || "N/A",
+        user?.fullName || "N/A",
+        user?.email || "N/A",
+      ]);
     });
 
     worksheet.addRow([]);
@@ -1251,7 +1397,11 @@ export const downloadEventSummaryXLS = async (req, res) => {
 
     (event.waitlist || []).forEach((entry) => {
       const user = entry.user;
-      worksheet.addRow([user?.username || "N/A", user?.fullName || "N/A", user?.email || "N/A"]);
+      worksheet.addRow([
+        user?.username || "N/A",
+        user?.fullName || "N/A",
+        user?.email || "N/A",
+      ]);
     });
 
     worksheet.columns.forEach((col) => (col.width = 30));
@@ -1273,15 +1423,16 @@ export const downloadEventSummaryXLS = async (req, res) => {
   }
 };
 
-
-
 export const removeMember = asyncHandler(async (req, res) => {
   try {
     const { eventId, memberId } = req.params;
     const userId = req.user._id;
     const userRole = req.user.role;
 
-    if (!mongoose.Types.ObjectId.isValid(eventId) || !mongoose.Types.ObjectId.isValid(memberId)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(eventId) ||
+      !mongoose.Types.ObjectId.isValid(memberId)
+    ) {
       return res.status(400).json({ message: "Invalid event ID or member ID" });
     }
 
@@ -1295,14 +1446,23 @@ export const removeMember = asyncHandler(async (req, res) => {
     const isAdmin = userRole === "admin";
 
     if (!isCreator && !isAdmin) {
-      return res.status(403).json({ message: "Access denied. Only the event creator or an admin can remove members." });
+      return res
+        .status(403)
+        .json({
+          message:
+            "Access denied. Only the event creator or an admin can remove members.",
+        });
     }
 
     // Check if the member is actually registered in the event
-    const isMember = event.registeredUsers.some((user) => user.user.toString() === memberId);
+    const isMember = event.registeredUsers.some(
+      (user) => user.user.toString() === memberId
+    );
 
     if (!isMember) {
-      return res.status(404).json({ message: "User not registered in this event" });
+      return res
+        .status(404)
+        .json({ message: "User not registered in this event" });
     }
 
     // Remove the member
@@ -1319,24 +1479,4 @@ export const removeMember = asyncHandler(async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
-
-
- 
- 
-export {
-  createEvents,
-  getAllEvents,
-  getEventDetail,
-  deleteEvent,
-  editEvents,
-
-};
+export { createEvents, getAllEvents, getEventDetail, deleteEvent, editEvents };

@@ -32,7 +32,7 @@ const EventDetails = () => {
     };
 
     fetchEventDetail();
-  }, [id]);
+  }, [id,]);
 
 
 
@@ -118,9 +118,11 @@ const handleRegister = async () => {
         // Free event: direct register
         const { data } = await axios.post(
           `/devevent/${id}/register`,
-          null,
           { withCredentials: true }
         );
+
+        navigate(`/events/${id}`);
+
         toast.success(data.message || 'Successfully registered');
       }
     } catch (err) {
@@ -224,7 +226,7 @@ const handleRegister = async () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleDownloadXLS}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold"
             >
               <FaTrashAlt />
               Download XLS
@@ -254,6 +256,7 @@ const handleRegister = async () => {
           price={eventDetails.price}
           duration={eventDetails.duration}
           onClick = {handleRegister}
+          registrationStatus={eventDetails.registrationStatus}
         />
       </div>
     </div>
