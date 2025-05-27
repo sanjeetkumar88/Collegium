@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "../utils/axios";
+import LoadingText from "../components/LoadingText";
 
 const AuthContext = createContext();
 
@@ -34,6 +35,12 @@ const AuthProvider = ({ children }) => {
       console.error(err);
     }
   };
+
+  if(loading){
+    return <LoadingText />
+      
+    
+  }
 
   return (
     <AuthContext.Provider value={{ authUser, setAuthUser, logout ,login}}>
