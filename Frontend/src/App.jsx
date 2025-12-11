@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/next"
 import Home from "./components/Pages/Home";
 import Events from "./components/Pages/Events";
 import PageLayout from "./components/layout/PageLayout";
