@@ -2,31 +2,31 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "../../utils/axios";
 import { useAuth } from "../../context/AuthContext";
-import { FiLoader } from "react-icons/fi";
+
+import { TextInput, PasswordInput, Button, Card, Divider } from "@mantine/core";
+import {Github, Facebook, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { FaGoogle } from "react-icons/fa";
+const Google = FaGoogle;
 
 function Login() {
   const auth = useAuth();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const [errors, setErrors] = useState({});
+
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     let validationErrors = {};
-    if (!formData.email) validationErrors.email = 'Email is required';
-    if (!formData.password) validationErrors.password = 'Password is required';
+    if (!formData.email) validationErrors.email = "Email is required";
+    if (!formData.password) validationErrors.password = "Password is required";
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -35,82 +35,122 @@ function Login() {
 
     setLoading(true);
     try {
-      const response = await axios.post('/users/login', formData);
+      const response = await axios.post("/users/login", formData);
 
       if (response.status === 200) {
         auth.login(response.data.data.user);
-        window.location.href = '/';
+        window.location.href = "/";
       }
     } catch (error) {
-      if (error.response) {
-        // Check for specific error and extract the message
-        if (error.response.data && error.response.data.message) {
-          setErrors({ server: error.response.data.message });
-        } else if (error.response.data.includes("Error: User does not exist")) {
-          // If the response contains a "User does not exist" error
-          setErrors({ server: "User does not exist. Please check your credentials." });
-        } else {
-          setErrors({ server: 'Inalid password' });
-        }
-      } else if (error.request) {
-        setErrors({ server: 'No response received from the server. Please check your network.' });
-      } else {
-        setErrors({ server: 'An unexpected error occurred.' });
-      }
+      setErrors({
+        server: error.response?.data?.message || "Invalid email or password",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gray-100">
-      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">Login to Your Account</h2>
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-600">Email</label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            {errors.email && <p className="text-red-500 text-xs mt-2">{errors.email}</p>}
-          </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+      
+      {/* Logo */}
+      <motion.img
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        src="/Logo.png"
+        alt="logo"
+        className="w-12 mb-6 opacity-80"
+      />
 
-          <div className="mb-4">
-            <label htmlFor="password" className="block text-sm font-semibold text-gray-600">Password</label>
-            <input
-              id="password"
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            {errors.password && <p className="text-red-500 text-xs mt-2">{errors.password}</p>}
-          </div>
+      {/* Social login buttons */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="w-full max-w-sm space-y-3 mb-5"
+      >
+        <Button
+          variant="default"
+          fullWidth
+          leftSection={<Google size={18} />}
+        >
+          Log in with Google
+        </Button>
+      </motion.div>
 
-          {errors.server && <p className="text-red-500 text-center text-sm mt-4">{errors.server}</p>}
+      {/* Main Form Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+      >
+        <Card shadow="sm" padding="lg" radius="md" withBorder className="w-[22rem]">
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-3 rounded-md text-white mt-6 transition-colors ${loading ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'} focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-          >
-            {loading ? <FiLoader className="inline-block animate-spin mr-2" /> : 'Login'}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-16">
 
-        <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-indigo-600 hover:text-indigo-500">Sign up</Link>
+            <div className="space-y-4">
+              {/* Email */}
+              <TextInput
+                label="Email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                error={errors.email}
+              />
+
+              {/* Password */}
+              <PasswordInput
+                label="Password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
+                mt="sm"
+                rightSectionWidth={40}
+              />
+
+              {/* Forgot password */}
+              <div className="flex justify-end">
+                <Link
+                  to="/forgot-password"
+                  className="text-blue-600 text-sm hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
+              {/* Server Error */}
+              {errors.server && (
+                <p className="text-red-600 text-sm text-center">
+                  {errors.server}
+                </p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              fullWidth
+              size="md"
+              color="blue"
+              disabled={loading}
+              leftSection={loading ? <Loader2 className="animate-spin" size={18} /> : null}
+            >
+              {loading ? "Logging in..." : "Log in"}
+            </Button>
+          </form>
+
+          <Divider my="lg" />
+
+          {/* Signup Link */}
+          <p className="text-center text-sm">
+            Don’t have an account?{" "}
+            <Link to="/register" className="text-blue-600 hover:underline">
+              Sign up
+            </Link>
           </p>
-        </div>
-      </div>
+        </Card>
+      </motion.div>
     </div>
   );
 }

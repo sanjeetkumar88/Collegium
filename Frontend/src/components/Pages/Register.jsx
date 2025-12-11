@@ -11,6 +11,7 @@ function Register() {
     password: "",
     avatar: "",
   });
+
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
@@ -23,7 +24,6 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Simple form validation
     let validationErrors = {};
     if (!formData.username) validationErrors.username = "Username is required";
     if (!formData.email) validationErrors.email = "Email is required";
@@ -35,102 +35,120 @@ function Register() {
       return;
     }
 
-    // Send registration request to backend using axios
     try {
       const response = await axios.post("/users/register", formData);
-
-      if (response.status === 201) {
-        navigate("/login");
-      }
+      if (response.status === 201) navigate("/login");
     } catch (error) {
       if (error.response) {
-        // Handle error from backend (e.g., validation error, server error)
-        setErrors({ server: error.response.data.message || "An error occurred." });
+        setErrors({
+          server: error.response.data.message || "An error occurred.",
+        });
       } else {
-        // Handle error if no response (e.g., network error)
         setErrors({ server: "Network error. Please try again." });
       }
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full sm:w-96">
-        <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">Create Account</h2>
-        <form onSubmit={handleSubmit}>
+    <div className="min-h-screen w-full flex items-center justify-center bg-white px-4">
+      <div className="w-full max-w-md p-8 rounded-2xl shadow-xl border border-gray-200 bg-white">
+        
+        {/* Title */}
+        <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text">
+          Create an Account
+        </h2>
+        <p className="text-center text-gray-500 mt-1">Join us today</p>
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+
           {/* Username */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-600">Username</label>
+          <div>
+            <label className="text-sm font-medium text-gray-700">Username</label>
             <input
               type="text"
               name="username"
               value={formData.username}
               onChange={handleChange}
-              className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="your_username"
+              className="w-full mt-2 p-3 border border-gray-300 bg-gray-50 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
-            {errors.username && <p className="text-red-500 text-xs mt-2">{errors.username}</p>}
+            {errors.username && (
+              <p className="text-red-500 text-xs mt-1">{errors.username}</p>
+            )}
           </div>
 
           {/* Email */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-600">Email</label>
+          <div>
+            <label className="text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
               name="email"
+              placeholder="you@example.com"
               value={formData.email}
               onChange={handleChange}
-              className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full mt-2 p-3 border border-gray-300 bg-gray-50 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
-            {errors.email && <p className="text-red-500 text-xs mt-2">{errors.email}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
           </div>
 
           {/* Full Name */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-600">Full Name</label>
+          <div>
+            <label className="text-sm font-medium text-gray-700">Full Name</label>
             <input
               type="text"
               name="fullName"
+              placeholder="John Doe"
               value={formData.fullName}
               onChange={handleChange}
-              className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full mt-2 p-3 border border-gray-300 bg-gray-50 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
-            {errors.fullName && <p className="text-red-500 text-xs mt-2">{errors.fullName}</p>}
+            {errors.fullName && (
+              <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
+            )}
           </div>
 
           {/* Password */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-600">Password</label>
+          <div>
+            <label className="text-sm font-medium text-gray-700">Password</label>
             <input
               type="password"
               name="password"
+              placeholder="••••••••"
               value={formData.password}
               onChange={handleChange}
-              className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full mt-2 p-3 border border-gray-300 bg-gray-50 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
-            {errors.password && <p className="text-red-500 text-xs mt-2">{errors.password}</p>}
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            )}
           </div>
 
-          {/* Avatar URL */}
-          
-
-          {/* Server-side errors */}
-          {errors.server && <p className="text-red-500 text-center text-xs mt-4">{errors.server}</p>}
+          {/* Server errors */}
+          {errors.server && (
+            <p className="text-red-500 text-center text-xs">{errors.server}</p>
+          )}
 
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-6"
+            className="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition shadow-md"
           >
             Register
           </button>
         </form>
 
-        <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
-            Already have an account?{" "}
-            <a href="/login" className="text-indigo-600 hover:text-indigo-500">Login</a>
-          </p>
-        </div>
+        {/* Footer */}
+        <p className="text-center text-sm text-gray-600 mt-5">
+          Already have an account?{" "}
+          <a
+            href="/login"
+            className="text-indigo-600 hover:text-indigo-500 font-medium"
+          >
+            Login
+          </a>
+        </p>
       </div>
     </div>
   );
