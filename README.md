@@ -4,6 +4,9 @@ Collegium is a full-stack role-based collaboration and event management platform
 
 ---
 
+## Live Demo
+https://collegium-kappa.vercel.app/
+
 ## 🚀 Features
 
 ### 🧠 Role-Based Access
