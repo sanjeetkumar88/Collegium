@@ -12,7 +12,8 @@ const allowedOrigins = [
   "https://collegium-kappa.vercel.app",
   "http://localhost:5173",
   "https://collegium-git-main-sanjeet-kumars-projects-8d859d11.vercel.app",
-  "https://collegium-kgsagdofm-sanjeet-kumars-projects-8d859d11.vercel.app"
+  "https://collegium-kgsagdofm-sanjeet-kumars-projects-8d859d11.vercel.app",
+  "https://collegium-app.vercel.app/"
 ];
 
 app.use(cors({
