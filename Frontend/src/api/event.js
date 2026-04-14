@@ -1,0 +1,20 @@
+import apiClient from "./apiClient";
+
+export const createEvent = (data) => apiClient.post("/devevent/createevent", data);
+export const getAllEvents = (params) => apiClient.get("/devevent/getAllEvents", { params });
+export const getEventDetails = (id) => apiClient.get(`/devevent/geteventdetail/${id}`);
+export const deleteEvent = (id) => apiClient.get(`/devevent/delete/${id}`);
+export const editEvent = (id, data) => apiClient.put(`/devevent/editevent/${id}`, data);
+export const registerForEvent = (id) => apiClient.post(`/devevent/${id}/register`);
+export const registerWithPayment = (id, data) => apiClient.post(`/devevent/${id}/registerwithpayment`, data);
+export const getRegisteredUsers = (eventId) => apiClient.get(`/devevent/${eventId}/registered-users`);
+export const getWaitlistedUsers = (eventId) => apiClient.get(`/devevent/${eventId}/waitlisted-users`);
+export const updateWaitlistStatus = (eventId, userId, data) => apiClient.post(`/devevent/${eventId}/waitlist/${userId}`, data);
+export const getCreatedEvents = (params) => apiClient.get("/devevent/createdevents", { params });
+export const getRsvps = (params) => apiClient.get("/devevent/rsvps", { params });
+export const getRequests = (params) => apiClient.get("/devevent/getrequstedusers", { params });
+export const getEventDashboard = () => apiClient.get("/devevent/dashboard");
+export const downloadEventSummary = (eventId) => apiClient.get(`/devevent/${eventId}/summary/download`, { responseType: 'blob' });
+export const downloadRegisteredUsers = (eventId) => apiClient.get(`/devevent/${eventId}/registered-users/download`, { responseType: 'blob' });
+export const downloadWaitlistedUsers = (eventId) => apiClient.get(`/devevent/${eventId}/waitlisted-users/download`, { responseType: 'blob' });
+export const removeEventMember = (eventId, memberId) => apiClient.post(`/devevent/${eventId}/remove-member/${memberId}`);

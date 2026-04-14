@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import axios from "../utils/axios";
-import LoadingText from "../components/LoadingText";
+import * as userApi from "../api/user";
+import LoadingText from "../components/common/LoadingText";
 
 const AuthContext = createContext();
 
@@ -12,7 +12,7 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get("/users/verify", { withCredentials: true });
+        const res = await userApi.verify();
         setAuthUser(res.data.user); 
       } catch (err) { 
         setAuthUser(null);
@@ -29,7 +29,7 @@ const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post("/users/logout", {}, { withCredentials: true });
+      await userApi.logout();
       setAuthUser(null);
     } catch (err) {
       console.error(err);

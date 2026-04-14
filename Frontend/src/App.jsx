@@ -1,44 +1,40 @@
-import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Home from "./components/Pages/Home";
-import Events from "./components/Pages/Events";
+import Home from "./pages/Home";
+import Events from "./pages/Events";
 import PageLayout from "./components/layout/PageLayout";
-import About from "./components/Pages/About";
-import Register from "./components/Pages/Register";
-import Login from "./components/Pages/Login";
-import ResourcePage from "./components/Pages/ResoucePage";
-import Club from "./components/Pages/Club";
-import ClubDetail from "./components/Pages/ClubDetails";
-import CreateEventForm from "./components/Pages/CreateEvent";
-import NotFound from "./components/Pages/NotFound";
-import UnauthorizedPage from "./components/UnauthorizePage/UnauthorizedPage";
-   
-import PrivateRoute from "./routes/PrivateRoute"; 
-import CreateClub from "./components/Pages/CreateClub";
-import CreateNote from "./components/Pages/CreateNote";
-import CreateProject from "./components/Pages/CreateProject";
-import Projects from "./components/Pages/Projects";
-import ProjectDetail from "./components/Pages/ProjectDetail";
+import About from "./pages/About";
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+import ResourcePage from "./pages/ResoucePage";
+import Club from "./pages/Club";
+import ClubDetail from "./pages/ClubDetails";
+import CreateEventForm from "./pages/CreateEvent";
+import NotFound from "./pages/NotFound";
+import UnauthorizedPage from "./pages/UnauthorizedPage";
+import PrivateRoute from "./routes/guards/PrivateRoute"; 
+import CreateClub from "./pages/CreateClub";
+import CreateNote from "./pages/CreateNote";
+import CreateProject from "./pages/CreateProject";
+import Projects from "./pages/Projects";
+import ProjectDetail from "./pages/ProjectDetail";
 import { useAuth } from "./context/AuthContext"; 
-import EventDetails from "./components/Pages/EventDetails";
-import EditEventForm from "./components/Pages/EditEventForm";  
-import EventDashBoard from "./components/Pages/EventDashBoard";
-import EventRSVPs from "./components/Pages/EventRSVPs";
-import CreatedEvents from "./components/Pages/CreatedEvents";
-import EventRequest from "./components/Pages/EventRequest";
-import { useFetchClubLeader } from "./CustomHooks/useFetchClubLeader";
+import EventDetails from "./pages/EventDetails";
+import EditEventForm from "./pages/EditEventForm";  
+import EventDashBoard from "./pages/EventDashBoard";
+import EventRSVPs from "./pages/EventRSVPs";
+import CreatedEvents from "./pages/CreatedEvents";
+import EventRequest from "./pages/EventRequest";
+import { useFetchClubLeader } from "./hooks/useFetchClubLeader";
 
 function App() {
   const auth = useAuth();
   const {isLeader} = useFetchClubLeader();
   
   return (
-    
     <BrowserRouter>
       <Routes>
         {/* Public Routes */}
         <Route path="/register" element={auth.authUser ? <Navigate to="/" replace /> : <Register />} />
-
         <Route path="/login" element={auth.authUser ? <Navigate to="/" replace /> : <Login />} />
 
         {/* Layout Routes */}
@@ -173,7 +169,6 @@ function App() {
           }
           />
          
-          
           <Route 
           path="events/:id"
           element = {
@@ -184,7 +179,6 @@ function App() {
           }
           />
 
-          
           <Route 
           path="events/:id/edit"
           element = {
@@ -195,12 +189,6 @@ function App() {
             />
           }
           />
-
-          
-
-
-
-
         </Route>
 
         {/* 404 */}

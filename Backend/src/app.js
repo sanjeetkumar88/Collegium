@@ -11,6 +11,7 @@ dotenv.config({
 const allowedOrigins = [
   "https://collegium-kappa.vercel.app",
   "http://localhost:5173",
+  "http://localhost:5174",
   "https://collegium-git-main-sanjeet-kumars-projects-8d859d11.vercel.app",
   "https://collegium-kgsagdofm-sanjeet-kumars-projects-8d859d11.vercel.app",
   "https://collegium-app.vercel.app"
@@ -36,17 +37,12 @@ app.use(cookieParser())
 
 // routes import
 
-import userRouter from './routes/user.routes.js'
-
-import notesRouter from './routes/notes.routes.js'
-
-import clubrouter from './routes/club.routes.js'
-
-import eventrouter from './routes/event.routes.js'
-
-import projectrouter from './routes/project.route.js'
-
-import paymentrouter from './routes/payment.route.js'
+import userRouter from './modules/user/user.routes.js'
+import notesRouter from './modules/notes/notes.routes.js'
+import clubrouter from './modules/club/club.routes.js'
+import eventrouter from './modules/event/event.routes.js'
+import projectrouter from './modules/project/project.routes.js'
+import paymentrouter from './modules/payment/payment.routes.js'
 
 
 // routes declaration

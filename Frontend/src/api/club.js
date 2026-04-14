@@ -1,0 +1,20 @@
+import apiClient from "./apiClient";
+
+export const createClub = (data) => apiClient.post("/club/createclub", data);
+export const getAllClubs = (params) => apiClient.get("/club/getallclub", { params });
+export const getMyClubs = () => apiClient.get("/club/mine");
+export const getClubDetails = (id) => apiClient.get(`/club/${id}`);
+export const joinClub = (id) => apiClient.post(`/club/${id}/joinclub`);
+export const approveApplicant = (id, applicantId) => apiClient.post(`/club/${id}/approveapplicants`, { applicantId });
+export const rejectApplicant = (id, applicantId) => apiClient.post(`/club/${id}/rejectapplicants`, { applicantId });
+export const removeMember = (id, applicantId) => apiClient.post(`/club/${id}/removemember`, { applicantId });
+export const makeCoLeader = (id, applicantId) => apiClient.post(`/club/${id}/makecoleader`, { applicantId });
+export const makeLeader = (id, applicantId) => apiClient.post(`/club/${id}/makeleader`, { applicantId });
+export const removeCoLeader = (id, applicantId) => apiClient.post(`/club/${id}/removecoleader`, { applicantId });
+export const updateClubDescription = (id, description) => apiClient.patch(`/club/${id}/updatedescription`, { description });
+export const updateClubCoverImg = (id, data) => apiClient.patch(`/club/${id}/updatecoverimg`, data);
+export const updateClubLogo = (id, data) => apiClient.patch(`/club/${id}/updatelogo`, data);
+export const getClubMembers = (id) => apiClient.get(`/club/${id}/members`);
+export const getClubCoLeaders = (id) => apiClient.get(`/club/${id}/coleaders`);
+export const getClubApplicants = (id) => apiClient.get(`/club/${id}/applicants`);
+export const getAllClubLeaders = () => apiClient.get("/club/getallclubleaders");

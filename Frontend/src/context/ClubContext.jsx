@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import axios from "../utils/axios";
+import * as clubApi from "../api/club";
 import { toast } from "react-toastify";
 
 const ClubContext = createContext();
@@ -17,7 +17,7 @@ export const ClubProvider = ({ children }) => {
 
   const approveApplicant = async (id, applicantId) => {
     try {
-      const res = await axios.post(`/club/${id}/approveapplicants`, { applicantId });
+      const res = await clubApi.approveApplicant(id, applicantId);
       toggleRefresh(setRefreshApplicants);
       toast.success("Applicant approved successfully!");
       return res.data;
@@ -29,7 +29,7 @@ export const ClubProvider = ({ children }) => {
 
   const rejectApplicant = async (id, applicantId) => {
     try {
-      const res = await axios.post(`/club/${id}/rejectapplicants`, { applicantId });
+      const res = await clubApi.rejectApplicant(id, applicantId);
       toggleRefresh(setRefreshApplicants);
       toast.success("Applicant rejected successfully.");
       return res.data;
@@ -41,7 +41,7 @@ export const ClubProvider = ({ children }) => {
 
   const removeMember = async (id, applicantId) => {
     try {
-      const res = await axios.post(`/club/${id}/removemember`, { applicantId });
+      const res = await clubApi.removeMember(id, applicantId);
       toggleRefresh(setRefreshMembers);
       toast.success("Member removed successfully.");
       return res.data;
@@ -53,7 +53,7 @@ export const ClubProvider = ({ children }) => {
 
   const makeCoLeader = async (id, applicantId) => {
     try {
-      const res = await axios.post(`/club/${id}/makecoleader`, { applicantId });
+      const res = await clubApi.makeCoLeader(id, applicantId);
       toggleRefresh(setRefreshMembers);
       toast.success("Co-leader assigned successfully.");
       return res.data;
@@ -65,7 +65,7 @@ export const ClubProvider = ({ children }) => {
 
   const makeLeader = async (id, applicantId) => {
     try {
-      const res = await axios.post(`/club/${id}/makeleader`, { applicantId });
+      const res = await clubApi.makeLeader(id, applicantId);
       toast.success("Leader assigned successfully.");
       return res.data;
     } catch (err) {
@@ -76,7 +76,7 @@ export const ClubProvider = ({ children }) => {
 
   const removeCoLeader = async (id, applicantId) => {
     try {
-      const res = await axios.post(`/club/${id}/removecoleader`, { applicantId });
+      const res = await clubApi.removeCoLeader(id, applicantId);
       toggleRefresh(setRefreshLeaders);
       toast.success("Co-leader removed successfully.");
       return res.data;
@@ -89,7 +89,7 @@ export const ClubProvider = ({ children }) => {
   const handleApply = async (id, userId) => {
     setApplying(true);
     try {
-      const response = await axios.post(`/club/${id}/joinclub`, { userId });
+      const response = await clubApi.joinClub(id);
       toast.success("Applied to club successfully.");
       return response.data;
     } catch (err) {
