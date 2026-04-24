@@ -25,6 +25,8 @@ import EventRSVPs from "./pages/EventRSVPs";
 import CreatedEvents from "./pages/CreatedEvents";
 import EventRequest from "./pages/EventRequest";
 import { useFetchClubLeader } from "./hooks/useFetchClubLeader";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 
 function App() {
   const auth = useAuth();
@@ -115,6 +117,15 @@ function App() {
               />
             }
           />
+          <Route
+            path="/projects"
+            element={
+              <PrivateRoute
+                element={<Projects />}
+                allowedRoles={["admin", "teacher", "student"]}
+              />
+            }
+          />
 
           <Route
             path="project/explore-projects/:id"
@@ -188,6 +199,24 @@ function App() {
             isLeader={isLeader}
             />
           }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute
+                element={<Profile />}
+                allowedRoles={["admin", "teacher", "student"]}
+              />
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute
+                element={<Settings />}
+                allowedRoles={["admin", "teacher", "student"]}
+              />
+            }
           />
         </Route>
 

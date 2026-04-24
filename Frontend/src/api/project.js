@@ -8,6 +8,7 @@ export const createProject = (data) => apiClient.post("/devproject/create-projec
 export const getProjects = (params) => apiClient.get("/devproject/getallproject", { params });
 export const getProjectDetail = (id) => apiClient.get(`/devproject/getprojectdetail/${id}`);
 export const joinProjectRequest = (id, data) => apiClient.post(`/devproject/join-project/${id}`, data);
+export const joinProject = joinProjectRequest;
 export const handleJoinRequest = (id, data) => apiClient.post(`/devproject/approve-join-request/${id}`, data);
 export const getProjectMembers = (id) => apiClient.get(`/devproject/getprojectmembers/${id}`);
 export const leaveProject = (id) => apiClient.post(`/devproject/leave-project/${id}`);

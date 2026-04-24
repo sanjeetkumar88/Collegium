@@ -87,113 +87,136 @@ const CreateClub = () => {
   };
 
   return (
-    <motion.div
-      className="max-w-2xl mx-auto mt-12 bg-white p-8 rounded-2xl shadow-2xl"
-      initial="initial"
-      animate="animate"
-      transition={{ duration: 0.6 }}
-      variants={fadeInUp}
-    >
-      <motion.h2
-        className="text-4xl font-bold text-indigo-700 mb-8 text-center"
-        variants={fadeInUp}
-        transition={{ delay: 0.1 }}
-      >
-        🚀 Create a New Club
-      </motion.h2>
+    <div className="min-h-screen bg-white relative overflow-hidden py-20 px-6">
+      {/* Background Decor */}
+      <div className="absolute inset-0 bg-[url('/texture.svg')] opacity-[0.03] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-50/50 blur-[120px] rounded-full -mr-96 -mt-96" />
+      <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-cyan-50/50 blur-[120px] rounded-full -ml-96 -mb-96" />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Club Name */}
-        <motion.div variants={fadeInUp} transition={{ delay: 0.15 }}>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Club Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="name"
-            placeholder="Enter club name"
-            className="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-            value={formdata.name}
-            onChange={handleChange}
-          />
-        </motion.div>
-
-        {/* Description */}
-        <motion.div variants={fadeInUp} transition={{ delay: 0.2 }}>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            rows={4}
-            name="description"
-            placeholder="Tell us about the club..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none transition"
-            value={formdata.description}
-            onChange={handleChange}
-          />
-        </motion.div>
-
-        {/* Leader ID */}
-        <motion.div variants={fadeInUp} transition={{ delay: 0.25 }}>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select Leader <span className="text-red-500">*</span>
-          </label>
-          <select
-            name="leader"
-            className="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-            value={formdata.leader}
-            onChange={handleChange}
+      <main className="relative z-10 max-w-4xl mx-auto">
+        <div className="text-center mb-16 space-y-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="inline-block px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4"
           >
-            <option value="">-- Select Leader --</option>
-            {LeaderOptions.map((leader, i) => (
-              <option key={i} value={leader.value}>
-                {leader.label}
-              </option>
-            ))}
-          </select>
-        </motion.div>
+            Administration
+          </motion.div>
+          <h1 className="text-5xl font-black text-slate-900 tracking-tight">Establish <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">New Club</span></h1>
+          <p className="text-slate-500 font-medium text-lg">Define the mission and leadership for a new community hub.</p>
+        </div>
 
-        {/* Mentor MultiSelect */}
-        <motion.div variants={fadeInUp} transition={{ delay: 0.3 }}>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select Mentors (Multiple)<span className="text-red-500">*</span>
-          </label>
-          <MultiSelect
-            data={mentorOptions}
-            value={selectedMentors}
-            onChange={setSelectedMentors}
-            placeholder="Pick mentors"
-            searchable
-            nothingFound="No mentors found"
-            classNames={{
-              input: "rounded-xl shadow-sm border border-gray-300 focus:border-indigo-500",
-              label: "hidden",
-              dropdown: "z-[1000] shadow-lg border border-gray-200 rounded-xl",
-              item: "hover:bg-indigo-50 data-selected:bg-indigo-100",
-              values: "gap-2",
-              value: "bg-indigo-100 text-indigo-700 rounded-full px-3 py-1",
-            }}
-            radius="lg"
-            styles={{
-              input: { padding: "0.625rem 0.75rem" }, // match px-4 py-2
-            }}
-          />
-        </motion.div>
+        <motion.form
+          onSubmit={handleSubmit}
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/70 backdrop-blur-xl p-10 md:p-16 rounded-[3rem] border border-slate-100 shadow-2xl space-y-12"
+        >
+          {/* Section 1: Core Identity */}
+          <div className="space-y-8">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2 flex items-center gap-2">
+               <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Core Identity
+            </h3>
+            
+            <div className="space-y-6">
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Club Name *</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formdata.name}
+                    onChange={handleChange}
+                    placeholder="e.g. The Robotics Collective"
+                    className="w-full bg-slate-50 border-none rounded-2xl p-5 font-bold outline-none focus:ring-4 focus:ring-blue-100 transition-all"
+                  />
+               </div>
 
-        {/* Submit Button */}
-        <motion.div className="pt-4" variants={fadeInUp} transition={{ delay: 0.35 }}>
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Mission Statement</label>
+                  <textarea
+                    rows={4}
+                    name="description"
+                    value={formdata.description}
+                    onChange={handleChange}
+                    placeholder="What is the primary goal of this club?"
+                    className="w-full bg-slate-50 border-none rounded-2xl p-6 font-medium outline-none focus:ring-4 focus:ring-blue-100 transition-all resize-none"
+                  />
+               </div>
+            </div>
+          </div>
+
+          {/* Section 2: Leadership */}
+          <div className="space-y-8">
+             <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2 flex items-center gap-2">
+               <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Appointed Leadership
+             </h3>
+
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Select Leader (Student) *</label>
+                   <select
+                     name="leader"
+                     value={formdata.leader}
+                     onChange={handleChange}
+                     className="w-full bg-slate-50 border-none rounded-2xl p-4 font-bold outline-none focus:ring-4 focus:ring-blue-100 transition-all appearance-none cursor-pointer"
+                   >
+                     <option value="">Choose Student Leader</option>
+                     {LeaderOptions.map((leader, i) => (
+                       <option key={i} value={leader.value}>{leader.label}</option>
+                     ))}
+                   </select>
+                </div>
+
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Select Mentors (Teachers) *</label>
+                   <MultiSelect
+                     data={mentorOptions}
+                     value={selectedMentors}
+                     onChange={setSelectedMentors}
+                     placeholder="Pick one or more mentors"
+                     searchable
+                     nothingFound="No mentors found"
+                     radius="xl"
+                     styles={{
+                       input: { 
+                         backgroundColor: '#f8fafc', // slate-50
+                         border: 'none',
+                         borderRadius: '1rem',
+                         padding: '1rem',
+                         fontWeight: 'bold',
+                         minHeight: '3.5rem'
+                       },
+                       dropdown: {
+                         borderRadius: '1rem',
+                         boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                         border: '1px solid #f1f5f9'
+                       },
+                       value: {
+                         backgroundColor: '#eff6ff', // blue-50
+                         color: '#2563eb', // blue-600
+                         fontWeight: '900',
+                         fontSize: '10px',
+                         textTransform: 'uppercase',
+                         letterSpacing: '0.05em'
+                       }
+                     }}
+                   />
+                </div>
+             </div>
+          </div>
+
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={!formdata.name || !formdata.leader || selectedMentors.length === 0}
-            className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-500 transition-all duration-200 shadow-md"
+            className="w-full py-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black rounded-[2rem] shadow-2xl shadow-blue-500/20 hover:shadow-blue-500/40 transition-all uppercase tracking-[0.2em] disabled:opacity-50"
           >
-            Create Club
+            FINALIZE CLUB CREATION
           </motion.button>
-        </motion.div>
-      </form>
-    </motion.div>
+        </motion.form>
+      </main>
+    </div>
   );
 };
 

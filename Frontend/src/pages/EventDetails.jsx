@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
+import { Button } from "@mantine/core";
 
 const EventDetails = () => {
   const [eventDetails, setEventDetails] = useState(null);
@@ -175,73 +176,108 @@ const handleRegister = async () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div className="bg-gray-50 p-4">
-      {/* Top Left Buttons with Framer Motion */}
-      <motion.div
-        className="flex justify-start gap-4 mb-4"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
+    <div className="min-h-screen bg-white relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute inset-0 bg-[url('/texture.svg')] opacity-[0.03] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-50/50 blur-[120px] rounded-full -mr-64 -mt-64" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-cyan-50/50 blur-[120px] rounded-full -ml-64 -mb-64" />
+
+      <main className="relative z-10 max-w-7xl mx-auto px-6 py-12 md:py-20">
+        {/* Admin Controls */}
         {(user.authUser.role === "admin" ||
           eventDetails.createdBy === user.authUser.id || user.authUser.role === 'teacher') && (
-          <>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-wrap gap-4 mb-10 bg-white/70 backdrop-blur-xl p-6 rounded-3xl border border-white shadow-xl"
+          >
+            <Button
+              variant="light"
+              color="blue"
+              radius="xl"
+              size="md"
+              leftSection={<FaEdit />}
               onClick={handleEdit}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
+              className="font-bold"
             >
-              <FaEdit />
               Edit Event
-            </motion.button>
+            </Button>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <Button
+              variant="light"
+              color="red"
+              radius="xl"
+              size="md"
+              leftSection={<FaTrashAlt />}
               onClick={handleDelete}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold"
+              className="font-bold"
             >
-              <FaTrashAlt />
               Delete Event
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            </Button>
+
+            <Button
+              variant="light"
+              color="green"
+              radius="xl"
+              size="md"
+              leftSection={<FaTrashAlt />}
               onClick={handleDownloadXLS}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold"
+              className="font-bold ml-auto"
             >
-              <FaTrashAlt />
-              Download XLS
-            </motion.button>
-          </>
+              Export Summary (XLS)
+            </Button>
+          </motion.div>
         )}
-      </motion.div>
 
-      {/* Main Content */}
-      <div className="flex flex-col lg:flex-row gap-6 mt-6 items-start">
-        <div className="w-full lg:w-2/3 space-y-6">
-          <EventImage imageUrl={eventDetails.image} />
-          <EventAbout
-            description={eventDetails.description}
-            startDateTime={eventDetails.startDateTime}
-            venue={eventDetails.location[0]}
-          />
-          <EventTerms />
+        {/* Main Event Layout */}
+        <div className="flex flex-col lg:flex-row gap-12 items-start">
+          {/* Left Column: Content */}
+          <div className="w-full lg:w-2/3 space-y-12">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <EventImage imageUrl={eventDetails.image} />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="space-y-12"
+            >
+              <EventAbout
+                description={eventDetails.description}
+                startDateTime={eventDetails.startDateTime}
+                venue={eventDetails.location[0]}
+              />
+              <EventTerms />
+            </motion.div>
+          </div>
+
+          {/* Right Column: Sidebar */}
+          <div className="w-full lg:w-1/3 sticky top-28">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <EventSidebar
+                title={eventDetails.title}
+                category={eventDetails.category}
+                date={eventDetails.startDateTime}
+                location={eventDetails.location}
+                meet={eventDetails.meet}
+                price={eventDetails.price}
+                duration={eventDetails.duration}
+                onClick={handleRegister}
+                registrationStatus={eventDetails.registrationStatus}
+              />
+            </motion.div>
+          </div>
         </div>
-
-        <EventSidebar
-          title={eventDetails.title}
-          category={eventDetails.category}
-          date={eventDetails.startDateTime}
-          location={eventDetails.location}
-          meet={eventDetails.meet}
-          price={eventDetails.price}
-          duration={eventDetails.duration}
-          onClick = {handleRegister}
-          registrationStatus={eventDetails.registrationStatus}
-        />
-      </div>
+      </main>
     </div>
   );
 };

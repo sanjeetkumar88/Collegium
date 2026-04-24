@@ -18,3 +18,4 @@ export const getClubMembers = (id) => apiClient.get(`/club/${id}/members`);
 export const getClubCoLeaders = (id) => apiClient.get(`/club/${id}/coleaders`);
 export const getClubApplicants = (id) => apiClient.get(`/club/${id}/applicants`);
 export const getAllClubLeaders = () => apiClient.get("/club/getallclubleaders");
+export const updateClubDetails = (id, data) => apiClient.patch(`/club/${id}/updateclubdetails`, data);

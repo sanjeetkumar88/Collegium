@@ -1,9 +1,14 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import * as userApi from "../api/user";
+import { TextInput, PasswordInput, Button, Divider } from "@mantine/core";
+import { motion } from "framer-motion";
+import { FaUser, FaEnvelope, FaLock, FaUserCircle, FaIdCard } from "react-icons/fa";
+import { Loader2 } from "lucide-react";
 
 function Register() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -35,120 +40,145 @@ function Register() {
       return;
     }
 
+    setLoading(true);
     try {
       const response = await userApi.register(formData);
       if (response.status === 201) navigate("/login");
     } catch (error) {
-      if (error.response) {
-        setErrors({
-          server: error.response.data.message || "An error occurred.",
-        });
-      } else {
-        setErrors({ server: "Network error. Please try again." });
-      }
+      setErrors({
+        server: error.response?.data?.message || "An error occurred. Please try again.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-white px-4">
-      <div className="w-full max-w-md p-8 rounded-2xl shadow-xl border border-gray-200 bg-white">
-        
-        {/* Title */}
-        <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text">
-          Create an Account
-        </h2>
-        <p className="text-center text-gray-500 mt-1">Join us today</p>
+    <div className="min-h-screen relative flex items-center justify-center bg-white overflow-hidden px-4 py-20">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-50/50 blur-[120px] rounded-full -ml-64 -mt-64" />
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-cyan-50/50 blur-[120px] rounded-full -mr-64 -mb-64" />
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-
-          {/* Username */}
-          <div>
-            <label className="text-sm font-medium text-gray-700">Username</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="your_username"
-              className="w-full mt-2 p-3 border border-gray-300 bg-gray-50 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
-            {errors.username && (
-              <p className="text-red-500 text-xs mt-1">{errors.username}</p>
-            )}
+      <div className="relative z-10 w-full max-w-2xl">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white/70 backdrop-blur-xl border border-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl"
+        >
+          {/* Header */}
+          <div className="text-center mb-10">
+            <Link to="/" className="inline-block mb-6">
+               <div className="text-2xl font-black text-blue-600 tracking-tighter uppercase">COLLEGIUM</div>
+            </Link>
+            <h1 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">Create Account</h1>
+            <p className="text-slate-500 font-medium">Join the student innovation ecosystem.</p>
           </div>
 
-          {/* Email */}
-          <div>
-            <label className="text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="you@example.com"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full mt-2 p-3 border border-gray-300 bg-gray-50 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+          <form onSubmit={handleSubmit} className="space-y-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <TextInput
+                    label="Username"
+                    placeholder="student_pro"
+                    name="username"
+                    size="md"
+                    radius="lg"
+                    value={formData.username}
+                    onChange={handleChange}
+                    error={errors.username}
+                    leftSection={<FaUserCircle className="text-slate-400" size={14} />}
+                    styles={{
+                        input: { border: '1px solid #e2e8f0', backgroundColor: '#fff' },
+                        label: { fontWeight: 700, marginBottom: '8px', color: '#1e293b' }
+                    }}
+                />
+
+                <TextInput
+                    label="Full Name"
+                    placeholder="Alex Johnson"
+                    name="fullName"
+                    size="md"
+                    radius="lg"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    error={errors.fullName}
+                    leftSection={<FaIdCard className="text-slate-400" size={14} />}
+                    styles={{
+                        input: { border: '1px solid #e2e8f0', backgroundColor: '#fff' },
+                        label: { fontWeight: 700, marginBottom: '8px', color: '#1e293b' }
+                    }}
+                />
+
+                <div className="md:col-span-2">
+                    <TextInput
+                        label="Email Address"
+                        placeholder="alex@university.edu"
+                        name="email"
+                        size="md"
+                        radius="lg"
+                        value={formData.email}
+                        onChange={handleChange}
+                        error={errors.email}
+                        leftSection={<FaEnvelope className="text-slate-400" size={14} />}
+                        styles={{
+                            input: { border: '1px solid #e2e8f0', backgroundColor: '#fff' },
+                            label: { fontWeight: 700, marginBottom: '8px', color: '#1e293b' }
+                        }}
+                    />
+                </div>
+
+                <div className="md:col-span-2">
+                    <PasswordInput
+                        label="Choose Password"
+                        placeholder="Minimum 8 characters"
+                        name="password"
+                        size="md"
+                        radius="lg"
+                        value={formData.password}
+                        onChange={handleChange}
+                        error={errors.password}
+                        leftSection={<FaLock className="text-slate-400" size={14} />}
+                        styles={{
+                            input: { border: '1px solid #e2e8f0', backgroundColor: '#fff' },
+                            label: { fontWeight: 700, marginBottom: '8px', color: '#1e293b' }
+                        }}
+                    />
+                </div>
+             </div>
+
+            {errors.server && (
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-red-600 text-sm font-bold text-center bg-red-50 py-3 rounded-2xl border border-red-100"
+              >
+                {errors.server}
+              </motion.p>
             )}
+
+            <Button
+              type="submit"
+              fullWidth
+              size="xl"
+              radius="xl"
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-black shadow-lg shadow-blue-600/25 mt-4 transition-all"
+              leftSection={loading ? <Loader2 className="animate-spin" size={20} /> : null}
+            >
+              {loading ? "Creating Account..." : "Create Account"}
+            </Button>
+          </form>
+
+          {/* Footer */}
+          <div className="text-center mt-10">
+            <p className="text-slate-500 text-sm font-bold">
+              Already have an account?{" "}
+              <Link to="/login" className="text-blue-600 hover:text-blue-700 underline underline-offset-4 decoration-2">
+                Sign in instead
+              </Link>
+            </p>
           </div>
-
-          {/* Full Name */}
-          <div>
-            <label className="text-sm font-medium text-gray-700">Full Name</label>
-            <input
-              type="text"
-              name="fullName"
-              placeholder="John Doe"
-              value={formData.fullName}
-              onChange={handleChange}
-              className="w-full mt-2 p-3 border border-gray-300 bg-gray-50 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
-            {errors.fullName && (
-              <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
-            )}
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="text-sm font-medium text-gray-700">Password</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full mt-2 p-3 border border-gray-300 bg-gray-50 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
-            {errors.password && (
-              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-            )}
-          </div>
-
-          {/* Server errors */}
-          {errors.server && (
-            <p className="text-red-500 text-center text-xs">{errors.server}</p>
-          )}
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition shadow-md"
-          >
-            Register
-          </button>
-        </form>
-
-        {/* Footer */}
-        <p className="text-center text-sm text-gray-600 mt-5">
-          Already have an account?{" "}
-          <a
-            href="/login"
-            className="text-indigo-600 hover:text-indigo-500 font-medium"
-          >
-            Login
-          </a>
-        </p>
+        </motion.div>
       </div>
     </div>
   );

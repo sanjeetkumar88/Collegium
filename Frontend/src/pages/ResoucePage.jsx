@@ -78,103 +78,130 @@ const ResourcePage = () => {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100"
+      className="min-h-screen bg-white relative overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Heading */}
-      <motion.h1
-        className="text-4xl font-bold text-blue-700 mb-10 text-center"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        📚 Explore the Notes Library
-      </motion.h1>
+      {/* Background Texture & Blobs */}
+      <div className="absolute inset-0 bg-[url('/texture.svg')] opacity-[0.03] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100/50 blur-3xl rounded-full -mr-48 -mt-48" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-cyan-100/50 blur-3xl rounded-full -ml-48 -mb-48" />
 
-      {/* Tabs with Icons */}
-      <div className="flex justify-center mb-6">
-        <Tabs value={activeTab} onChange={setActiveTab} radius="lg" color="blue">
-          <Tabs.List grow>
-            <Tabs.Tab value="explore" leftSection={<FaBookOpen size={18} />}>
-              Explore
-            </Tabs.Tab>
-            <Tabs.Tab value="your" disabled={!isLoggedIn} leftSection={<FaUserAlt size={18} />}>
-              Your Notes
-            </Tabs.Tab>
-            <Tabs.Tab value="bookmarked" disabled={!isLoggedIn} leftSection={<FaBookmark size={18} />}>
-              Bookmarked
-            </Tabs.Tab>
-          </Tabs.List>
-        </Tabs>
-      </div>
+      <main className="relative z-10 max-w-7xl mx-auto px-6 py-24">
+        {/* Heading Section */}
+        <div className="text-center mb-16">
+          <motion.h1
+            className="text-5xl font-black tracking-tight mb-6"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="text-gradient">Explore</span> the Notes Library
+          </motion.h1>
+          <p className="text-slate-500 text-lg max-w-2xl mx-auto">
+            Access a vast collection of notes, previous year papers, and study resources shared by the community.
+          </p>
+        </div>
 
-      {/* Upload Button */}
-      <div className="text-center mb-10">
-        <Button
-          onClick={handleUploadNotesClick}
-          size="lg"
-          color="blue"
-          radius="xl"
-          leftSection={<FaUpload />}
+        {/* Action Bar (Tabs & Upload) */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+          {/* Tabs */}
+          <div className="w-full md:w-auto">
+            <Tabs value={activeTab} onChange={setActiveTab} radius="xl" color="blue" variant="pills">
+              <Tabs.List className="bg-slate-100/50 p-1 rounded-full backdrop-blur-sm border border-slate-200">
+                <Tabs.Tab value="explore" leftSection={<FaBookOpen size={16} />} className="font-semibold px-6">
+                  Explore
+                </Tabs.Tab>
+                <Tabs.Tab value="your" disabled={!isLoggedIn} leftSection={<FaUserAlt size={16} />} className="font-semibold px-6">
+                  Your Notes
+                </Tabs.Tab>
+                <Tabs.Tab value="bookmarked" disabled={!isLoggedIn} leftSection={<FaBookmark size={16} />} className="font-semibold px-6">
+                  Bookmarked
+                </Tabs.Tab>
+              </Tabs.List>
+            </Tabs>
+          </div>
+
+          {/* Upload Button */}
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              onClick={handleUploadNotesClick}
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 rounded-2xl shadow-lg shadow-blue-600/20 transition-all font-bold"
+              leftSection={<FaUpload />}
+            >
+              Upload Your Notes
+            </Button>
+          </motion.div>
+        </div>
+
+        {/* Filters Grid */}
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 p-8 rounded-[2rem] bg-slate-50/50 border border-slate-200 backdrop-blur-sm shadow-sm"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
         >
-          Upload Your Notes
-        </Button>
-      </div>
+          {/* Subject Filter */}
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+              <FaSearch size={16} />
+            </div>
+            <input
+              type="text"
+              className="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-slate-700 font-medium"
+              placeholder="Search by Subject..."
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+            />
+          </div>
 
-      {/* Filters */}
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        {/* Subject */}
-        <div className="relative">
-          <input
-            type="text"
-            className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-full"
-            placeholder="Search by Subject..."
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
+          {/* Title Filter */}
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+              <FaSearch size={16} />
+            </div>
+            <input
+              type="text"
+              className="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-slate-700 font-medium"
+              placeholder="Search by Title..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+
+          {/* Branch Filter */}
+          <Select
+            placeholder="Select Branch"
+            data={[
+              "Computer Science",
+              "Mechanical",
+              "Electrical",
+              "Civil",
+              "Electronics",
+              "Biotechnology",
+              "IT",
+              "Chemical",
+              "Common",
+              "Other",
+            ]}
+            size="lg"
+            radius="xl"
+            value={branch}
+            onChange={setBranch}
+            className="w-full"
+            styles={{
+              input: {
+                paddingTop: '0.875rem',
+                paddingBottom: '0.875rem',
+                border: '1px solid #e2e8f0',
+                borderRadius: '1rem',
+                fontWeight: 500,
+              }
+            }}
           />
-          <FaSearch className="absolute right-3 top-4 text-gray-400" />
-        </div>
-
-        {/* Title */}
-        <div className="relative">
-          <input
-            type="text"
-            className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-full"
-            placeholder="Search by Title..."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <FaSearch className="absolute right-3 top-4 text-gray-400" />
-        </div>
-
-        {/* Branch */}
-        <Select
-          placeholder="Select Branch"
-          data={[
-            "Computer Science",
-            "Mechanical",
-            "Electrical",
-            "Civil",
-            "Electronics",
-            "Biotechnology",
-            "IT",
-            "Chemical",
-            "Common",
-            "Other",
-          ]}
-          size="md"
-          radius="md"
-          value={branch}
-          onChange={setBranch}
-        />
-      </motion.div>
+        </motion.div>
 
       {/* Notes Display */}
       {loading ? (
@@ -246,6 +273,7 @@ const ResourcePage = () => {
           <p>😕 No notes found. Try adjusting your filters!</p>
         </motion.div>
       )}
+      </main>
     </motion.div>
   );
 };

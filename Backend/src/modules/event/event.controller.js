@@ -56,9 +56,109 @@ const createEvents = asyncHandler(async (req, res) => {
 });
 
 const getAllEvents = asyncHandler(async (req, res) => {
-  const events = await Event.find({ status: { $ne: "cancelled" } }).sort({ startDate: 1 });
-  return res.status(200).json(new ApiResponse(200, events, "Events fetched successfully"));
+  const {
+    title = "",
+    category,
+    privacy,
+    medium,
+    participationStatus, // "joined" | "not-joined" | "requested"
+    page = 1,
+    limit = 6,
+  } = req.query;
+
+  const userId = req.user?._id;
+  const now = new Date();
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+
+  // Base filters
+  const filters = {
+    status: { $ne: "cancelled" },
+    ...(title && { title: { $regex: title, $options: "i" } }),
+    ...(category && { category }),
+    ...(privacy && { privacy }),
+    ...(medium && { medium }),
+  };
+
+  const pipeline = [
+    { $match: filters },
+
+    // Compute event status dynamically
+    {
+      $addFields: {
+        computedStatus: {
+          $switch: {
+            branches: [
+              { case: { $gt: ["$startDate", now] }, then: "upcoming" },
+              {
+                case: {
+                  $and: [
+                    { $lte: ["$startDate", now] },
+                    { $gte: ["$endDate", now] },
+                  ],
+                },
+                then: "ongoing",
+              },
+            ],
+            default: "completed",
+          },
+        },
+      },
+    },
+
+    // Default: Hide completed events unless explicitly requested (currently no status filter in UI, so we hide them by default)
+    { $match: { computedStatus: { $ne: "completed" } } },
+
+    // Participation Status Filter logic
+    ...(participationStatus && userId
+      ? [
+          {
+            $addFields: {
+              isRegistered: {
+                $in: [new mongoose.Types.ObjectId(userId), { $ifNull: ["$registeredUsers.user", []] }]
+              },
+              isWaitlisted: {
+                $in: [new mongoose.Types.ObjectId(userId), { $ifNull: ["$waitlist.user", []] }]
+              }
+            }
+          },
+          {
+            $match: {
+              $or: [
+                participationStatus === "joined" ? { isRegistered: true } : null,
+                participationStatus === "requested" ? { isWaitlisted: true } : null,
+                participationStatus === "not-joined" ? { isRegistered: false, isWaitlisted: false } : null
+              ].filter(Boolean)
+            }
+          }
+        ]
+      : []),
+
+    { $sort: { startDate: 1 } },
+    { $skip: skip },
+    { $limit: parseInt(limit) },
+  ];
+
+  const events = await Event.aggregate(pipeline);
+
+  // Total count for pagination
+  const countPipeline = pipeline.filter(
+    (stage) => !stage.$skip && !stage.$limit
+  );
+  countPipeline.push({ $count: "total" });
+  const totalResult = await Event.aggregate(countPipeline);
+  const total = totalResult[0]?.total || 0;
+
+  return res.status(200).json({
+    data: events,
+    total,
+    totalPages: Math.ceil(total / limit),
+    page: parseInt(page),
+    limit: parseInt(limit),
+    message: "Events fetched successfully",
+  });
 });
+
+
 
 const getEventDetail = asyncHandler(async (req, res) => {
   const { id } = req.params;

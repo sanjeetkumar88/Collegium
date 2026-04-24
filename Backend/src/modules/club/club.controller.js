@@ -760,6 +760,10 @@ const makeCoLeader = asyncHandler(async (req, res) => {
 
     // Promote to co-leader
     club.coLeaders.push(applicantId);
+    
+    // Remove from regular members if they were there (optional, but keeps arrays clean)
+    club.members = club.members.filter(uid => uid.toString() !== applicantId.toString());
+    
     await club.save();
 
     return res
@@ -807,15 +811,13 @@ const makeLeader = asyncHandler(async (req, res) => {
       throw new ApiError(400, "User is already the Leader");
     }
 
-    // Ensure the applicant is part of the club (member or co-leader)
-    const isMember =
-      club.members.includes(applicantId) ||
-      club.coLeaders.includes(applicantId);
+    // ENFORCE: Only Co-leaders can be promoted to Leader
+    const isCoLeader = club.coLeaders.some(uid => uid.toString() === applicantId.toString());
 
-    if (!isMember) {
+    if (!isCoLeader) {
       throw new ApiError(
         400,
-        "User must be a member or co-leader to become the Leader"
+        "Only a Co-leader can be appointed as the Club Leader. Promote them to Co-leader first."
       );
     }
 

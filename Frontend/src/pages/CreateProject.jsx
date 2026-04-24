@@ -89,195 +89,155 @@ export default function CreateProject() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gradient-to-br from-gray-100 to-white text-gray-800 flex justify-center p-8"
-    >
-      <div className="w-full max-w-5xl">
-        {/* Cover Image Upload */}
+    <div className="min-h-screen bg-white relative overflow-hidden py-20 px-6">
+      {/* Background Decor */}
+      <div className="absolute inset-0 bg-[url('/texture.svg')] opacity-[0.03] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-50/50 blur-[120px] rounded-full -mr-96 -mt-96" />
+      <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-cyan-50/50 blur-[120px] rounded-full -ml-96 -mb-96" />
+
+      <main className="relative z-10 max-w-5xl mx-auto">
+        <div className="text-center mb-16 space-y-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="inline-block px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4"
+          >
+            Innovation Portal
+          </motion.div>
+          <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight leading-[1]">
+             Launch <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Your Vision</span>
+          </h1>
+          <p className="text-slate-500 font-medium text-lg max-w-2xl mx-auto mt-4">
+             Turn your ideas into reality. Document your progress, showcase your stack, and find collaborators.
+          </p>
+        </div>
+
+        {/* Cover Image Upload Area */}
         <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="border-2 border-dashed border-blue-400 rounded-lg h-80 flex flex-col items-center justify-center mb-10 relative overflow-hidden bg-white"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-12 group"
         >
-          {imagePreview ? (
-            <img
-              src={imagePreview}
-              alt="Uploaded Preview"
-              className="absolute w-full h-full object-cover rounded-lg"
-            />
-          ) : (
-            <>
-              <BsCloudUpload className="w-12 h-12 text-gray-500 mb-2" />
-              <p className="text-gray-500">Click to upload cover image</p>
-            </>
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            className="absolute w-full h-full opacity-0 cursor-pointer"
-            onChange={handleImageUpload}
-          />
+          <label className="block border-4 border-dashed border-slate-100 rounded-[3rem] h-[400px] flex flex-col justify-center items-center cursor-pointer relative overflow-hidden bg-slate-50/50 hover:bg-blue-50/50 hover:border-blue-200 transition-all shadow-xl group-hover:shadow-2xl">
+            <input type="file" accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleImageUpload} />
+            {imagePreview ? (
+              <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+            ) : (
+              <div className="text-center space-y-4">
+                <div className="w-20 h-20 rounded-3xl bg-white flex items-center justify-center mx-auto shadow-sm text-slate-400 group-hover:text-blue-500 transition-all duration-500 transform group-hover:scale-110">
+                   <BsCloudUpload size={32} />
+                </div>
+                <p className="font-black text-slate-400 uppercase tracking-widest text-xs">Drop your project cover here</p>
+              </div>
+            )}
+          </label>
         </motion.div>
 
-        {/* Project Form */}
         <motion.form
           onSubmit={handleSubmit}
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-xl shadow-xl"
+          transition={{ delay: 0.2 }}
+          className="bg-white/70 backdrop-blur-xl p-10 md:p-16 rounded-[3.5rem] border border-slate-100 shadow-2xl space-y-16"
         >
-          {[ 
-            ["Project Title", "title"],
-            ["Project URL", "projectUrl"],
-            ["GitHub/Repository Link", "githubRepo"],
-            ["Contact Information", "contactInfo"],
-            ["Tags/Keywords", "tags"],
-            ["Technologies Used", "technologiesUsed"],
-          ].map(([label, name]) => (
-            <div key={name}>
-              <label className="block mb-1 font-medium">{label} *</label>
-              <input
-                name={name}
-                value={formData[name]}
-                onChange={handleChange}
-                className="w-full p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                required
-              />
+          {/* Section 1: Core Specs */}
+          <div className="space-y-10">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] ml-2 flex items-center gap-2">
+               <div className="w-2 h-2 rounded-full bg-blue-500" /> Core Specifications
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Project Title *</label>
+                  <input name="title" value={formData.title} onChange={handleChange} required placeholder="e.g. AI-Powered Study Assistant" className="w-full bg-slate-50 border-none rounded-2xl p-5 font-bold outline-none focus:ring-4 focus:ring-blue-100 transition-all" />
+               </div>
+
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Project Category *</label>
+                  <select name="category" value={formData.category} onChange={handleChange} required className="w-full bg-slate-50 border-none rounded-2xl p-5 font-bold outline-none focus:ring-4 focus:ring-blue-100 transition-all appearance-none cursor-pointer">
+                    <option value="">Select category</option>
+                    <option value="web">Web Development</option>
+                    <option value="app">Mobile Application</option>
+                    <option value="ml">Machine Learning / AI</option>
+                  </select>
+               </div>
+
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Technologies Used *</label>
+                  <input name="technologiesUsed" value={formData.technologiesUsed} onChange={handleChange} required placeholder="React, Node.js, TensorFlow..." className="w-full bg-slate-50 border-none rounded-2xl p-5 font-bold outline-none focus:ring-4 focus:ring-blue-100 transition-all" />
+               </div>
+
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Current Status *</label>
+                  <select name="status" value={formData.status} onChange={handleChange} required className="w-full bg-slate-50 border-none rounded-2xl p-5 font-bold outline-none focus:ring-4 focus:ring-blue-100 transition-all appearance-none cursor-pointer">
+                    <option value="">Select status</option>
+                    <option value="ongoing">Active Development</option>
+                    <option value="completed">Completed / Final</option>
+                    <option value="on-hold">On Hold</option>
+                  </select>
+               </div>
             </div>
-          ))}
-
-          {/* Description */}
-          <div className="md:col-span-2">
-            <label className="block mb-1 font-medium">
-              Project Description *
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full p-3 rounded border border-gray-300"
-              rows="4"
-              required
-            />
           </div>
 
-          {/* Category */}
-          <div>
-            <label className="block mb-1 font-medium">Project Category *</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full p-3 rounded border border-gray-300"
-              required
-            >
-              <option value="">Select category</option>
-              <option value="web">Web</option>
-              <option value="app">App</option>
-              <option value="ml">Machine Learning</option>
-            </select>
+          {/* Section 2: Narrative */}
+          <div className="space-y-10">
+             <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] ml-2 flex items-center gap-2">
+               <div className="w-2 h-2 rounded-full bg-blue-500" /> Project Narrative
+             </h3>
+
+             <div className="space-y-8">
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Description *</label>
+                   <textarea name="description" value={formData.description} onChange={handleChange} required rows={5} placeholder="Tell us the story of your project..." className="w-full bg-slate-50 border-none rounded-2xl p-8 font-medium outline-none focus:ring-4 focus:ring-blue-100 transition-all resize-none" />
+                </div>
+
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Problem Statement</label>
+                   <textarea name="problemStatement" value={formData.problemStatement} onChange={handleChange} rows={3} placeholder="What problem does this solve?" className="w-full bg-slate-50 border-none rounded-2xl p-8 font-medium outline-none focus:ring-4 focus:ring-blue-100 transition-all resize-none" />
+                </div>
+             </div>
           </div>
 
-          {/* Open for Collaboration */}
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              name="openForCollaboration"
-              checked={formData.openForCollaboration}
-              onChange={handleChange}
-              className="w-5 h-5 text-blue-600"
-            />
-            <label className="font-medium">Open for Collaboration</label>
+          {/* Section 3: Links & Collab */}
+          <div className="space-y-10">
+             <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] ml-2 flex items-center gap-2">
+               <div className="w-2 h-2 rounded-full bg-blue-500" /> Links & Collaboration
+             </h3>
+
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">GitHub Repository</label>
+                   <input name="githubRepo" value={formData.githubRepo} onChange={handleChange} placeholder="https://github.com/..." className="w-full bg-slate-50 border-none rounded-2xl p-5 font-bold outline-none" />
+                </div>
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Live Demo URL</label>
+                   <input name="projectUrl" value={formData.projectUrl} onChange={handleChange} placeholder="https://..." className="w-full bg-slate-50 border-none rounded-2xl p-5 font-bold outline-none" />
+                </div>
+             </div>
+
+             <div className="bg-blue-50/50 p-8 rounded-[2rem] border border-blue-100 flex items-center justify-between">
+                <div>
+                   <h4 className="font-black text-blue-900 uppercase tracking-widest text-xs mb-1">Open for Collaboration</h4>
+                   <p className="text-blue-600/60 font-medium text-[10px]">Allow other students to request to join your team.</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" name="openForCollaboration" checked={formData.openForCollaboration} onChange={handleChange} className="sr-only peer" />
+                  <div className="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+             </div>
           </div>
 
-          {/* Problem Statement */}
-          <div className="md:col-span-2">
-            <label className="block mb-1 font-medium">Problem Statement</label>
-            <textarea
-              name="problemStatement"
-              value={formData.problemStatement}
-              onChange={handleChange}
-              className="w-full p-3 rounded border border-gray-300"
-              rows="4"
-            />
-          </div>
-
-          {/* Status */}
-          <div>
-            <label className="block mb-1 font-medium">Status *</label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="w-full p-3 rounded border border-gray-300"
-              required
-            >
-              <option value="">Select status</option>
-              <option value="ongoing">Ongoing</option>
-              <option value="completed">Completed</option>
-              <option value="on-hold">On Hold</option>
-            </select>
-          </div>
-
-          {/* Dates */}
-          <div>
-            <label className="block mb-1 font-medium">Start Date *</label>
-            <input
-              name="startDate"
-              value={formData.startDate}
-              onChange={handleChange}
-              type="date"
-              className="w-full p-3 rounded border border-gray-300"
-              required
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">End Date</label>
-            <input
-              name="endDate"
-              value={formData.endDate}
-              onChange={handleChange}
-              type="date"
-              className="w-full p-3 rounded border border-gray-300"
-            />
-          </div>
-
-          {/* Demo Video */}
-          <div className="md:col-span-2">
-            <label className="block mb-1 font-medium">Demo Video</label>
-            <input
-              name="demoVideo"
-              value={formData.demoVideo}
-              onChange={handleChange}
-              className="w-full p-3 rounded border border-gray-300"
-              type="text"
-            />
-          </div>
-
-          {/* Submit Button */}
-          <div className="md:col-span-2 flex justify-center mt-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="submit"
-              className="flex items-center gap-2 bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow hover:bg-blue-700"
-              disabled={loading}
-            >
-              {loading ? (
-                <span>Creating Project...</span>
-              ) : (
-                <>
-                  <AiOutlinePlus />
-                  Save Project
-                </>
-              )}
-            </motion.button>
-          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            disabled={loading}
+            className="w-full py-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black rounded-[2.5rem] shadow-2xl shadow-blue-500/20 hover:shadow-blue-500/40 transition-all uppercase tracking-[0.2em] disabled:opacity-50"
+          >
+            {loading ? "SAVING INNOVATION..." : "PUBLISH PROJECT"}
+          </motion.button>
         </motion.form>
-      </div>
-    </motion.div>
+      </main>
+    </div>
   );
 }

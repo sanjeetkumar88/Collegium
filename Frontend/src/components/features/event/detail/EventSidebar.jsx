@@ -1,3 +1,4 @@
+import React from "react";
 import {
   FaRegCalendarAlt,
   FaMapMarkerAlt,
@@ -5,7 +6,9 @@ import {
   FaBookmark,
   FaLink,
   FaClock,
+  FaMap,
 } from "react-icons/fa";
+import { Button } from "@mantine/core";
 
 const EventSidebar = ({
   title,
@@ -18,8 +21,8 @@ const EventSidebar = ({
   onClick,
   registrationStatus,
 }) => {
-  const hasCoords = location?.[1] && location?.[2]; // latitude & longitude
-  const hasMeetLink = meet?.[0]; // meet link
+  const hasCoords = location?.[1] && location?.[2];
+  const hasMeetLink = meet?.[0];
 
   const eventDate = new Date(date);
   const options = {
@@ -29,71 +32,107 @@ const EventSidebar = ({
     day: "numeric",
     hour: "numeric",
     minute: "numeric",
-    second: "numeric",
-    timeZoneName: "short",
   };
   const formattedDate = eventDate.toLocaleString("en-US", options);
 
   return (
-    <aside className="w-full lg:w-1/3 bg-white rounded-xl shadow-lg p-6 space-y-4">
-      <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-
-      <div className="flex items-center text-sm text-gray-600">
-        <FaBookmark className="mr-2 text-pink-500" />
-        {category}
+    <aside className="w-full bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-2xl p-8 space-y-8">
+      <div className="space-y-2">
+        <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg uppercase tracking-widest">
+          {category}
+        </span>
+        <h2 className="text-3xl font-black text-slate-900 leading-tight">{title}</h2>
       </div>
 
-      <div className="flex items-center text-sm text-gray-600">
-        <FaRegCalendarAlt className="mr-2 text-pink-500" />
-        {formattedDate}
-      </div>
+      <div className="space-y-6">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+            <FaRegCalendarAlt size={18} />
+          </div>
+          <div>
+            <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Date & Time</div>
+            <div className="text-sm font-bold text-slate-700">{formattedDate}</div>
+          </div>
+        </div>
 
-      <div className="flex items-center text-sm text-gray-600">
-        <FaClock className="mr-2 text-pink-500" />
-        Duration: {duration} hrs
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+            <FaClock size={18} />
+          </div>
+          <div>
+            <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Duration</div>
+            <div className="text-sm font-bold text-slate-700">{duration} Hours</div>
+          </div>
+        </div>
+
+        {hasCoords ? (
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+              <FaMapMarkerAlt size={18} />
+            </div>
+            <div>
+              <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Location</div>
+              <div className="text-sm font-bold text-slate-700">{location?.[0]}</div>
+            </div>
+          </div>
+        ) : hasMeetLink ? (
+          <div className="flex items-start gap-4">
+             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+              <FaLink size={18} />
+            </div>
+            <div>
+              <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Online Event</div>
+              <div className="text-sm font-bold text-slate-700">Link provided after joining</div>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {hasCoords && (
-        <div className="flex items-center text-sm text-gray-600">
-          <FaMapMarkerAlt className="mr-2 text-pink-500" />
-          {location?.[0]}
+        <div className="rounded-3xl overflow-hidden border border-slate-100 shadow-inner">
+          <iframe
+            src={`https://maps.google.com/maps?q=${location[1]},${location[2]}&z=13&ie=UTF8&iwloc=&output=embed`}
+            className="w-full h-44 grayscale hover:grayscale-0 transition-all duration-500"
+            title="Map"
+          ></iframe>
         </div>
       )}
 
-      {hasCoords ? (
-        <iframe
-          src={`https://maps.google.com/maps?q=${location[1]},${location[2]}&z=13&ie=UTF8&iwloc=&output=embed`}
-          className="w-full h-40 rounded-lg"
-          title="Map"
-        ></iframe>
-      ) : hasMeetLink ? (
-        <div className="flex items-center text-gray-600 text-sm">
-          <FaLink className="mr-2 text-pink-500" />
-          Meeting details will be emailed upon joining.
+      <div className="pt-6 border-t border-slate-100">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Ticket Price</div>
+            <div className="text-2xl font-black text-slate-900">
+              {price > 0 ? `₹${price}` : "FREE"}
+            </div>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
+            <FaTicketAlt size={20} />
+          </div>
         </div>
-      ) : null}
-
-      <div className="flex items-center justify-between pt-2">
-        <span className="flex items-center text-sm font-medium text-gray-800">
-          <FaTicketAlt className="mr-1 text-pink-600" />
-          {price > 0 ? `₹${price}` : "Free"}
-        </span>
 
         {registrationStatus === "not-registered" && (
-          <button
-            className="bg-pink-600 hover:bg-pink-700 transition text-white px-4 py-2 rounded-lg font-semibold"
+          <Button
+            fullWidth
+            size="xl"
+            radius="xl"
             onClick={onClick}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-black shadow-xl shadow-blue-500/20 py-4"
           >
-            RSVP
-          </button>
+            RSVP NOW
+          </Button>
         )}
 
         {registrationStatus === "joined" && (
-          <span className="text-green-600 font-semibold text-sm">You’ve joined</span>
+          <div className="w-full py-4 rounded-full bg-green-50 text-green-600 font-black text-center border border-green-100">
+            YOU ARE REGISTERED
+          </div>
         )}
 
         {registrationStatus === "requested" && (
-          <span className="text-yellow-600 font-semibold text-sm">Request Pending</span>
+          <div className="w-full py-4 rounded-full bg-yellow-50 text-yellow-600 font-black text-center border border-yellow-100">
+            PENDING APPROVAL
+          </div>
         )}
       </div>
     </aside>
@@ -101,5 +140,3 @@ const EventSidebar = ({
 };
 
 export default EventSidebar;
-// This component is used in the EventDetails page to display event details in a sidebar format.
-// It includes event title, category, date, location, meeting link, price, duration, and a button to RSVP.  

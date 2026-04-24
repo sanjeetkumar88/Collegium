@@ -14,7 +14,7 @@ export const isClubEditor = async (req, res, next) => {
     }
 
     const isLeader = club.leader.toString() === userId.toString();
-    const isMentor = club.mentor?.toString() === userId.toString(); // optional chaining
+    const isMentor = club.mentor?.some(mId => mId.toString() === userId.toString());
     const isAdmin = userRole === "admin";
 
     if (isLeader || isMentor || isAdmin) {

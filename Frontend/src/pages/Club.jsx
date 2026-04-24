@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Select, Chip, Button, Pagination } from "@mantine/core";
+import { motion } from "framer-motion";
+import { FiFilter } from "react-icons/fi";
+import { IoIosAddCircle } from "react-icons/io";
 import * as clubApi from "../api/club";
 import ClubCard from "../components/features/cards/Clubcard";
 import { useAuth } from "../context/AuthContext";
 import { useClub } from "../context/ClubContext";
-import { useDebounce } from "use-debounce";
+import useDebounce from "../hooks/useDebounce";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Club = () => {
   const [clubs, setClubs] = useState([]);
   const [search, setSearch] = useState("");
-  const [debouncedSearch] = useDebounce(search, 500);
+  const debouncedSearch = useDebounce(search, 500);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState(null);
@@ -105,122 +109,170 @@ const Club = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="min-h-screen bg-white relative overflow-hidden">
       <ToastContainer position="top-right" autoClose={3000} theme="colored" />
+      
+      {/* Background Decor */}
+      <div className="absolute inset-0 bg-[url('/texture.svg')] opacity-[0.03] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-50/50 blur-[120px] rounded-full -mr-64 -mt-64" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-cyan-50/50 blur-[120px] rounded-full -ml-64 -mb-64" />
 
-      <motion.h1
-        className="text-5xl font-bold text-center text-gray-800 drop-shadow-sm tracking-wide"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      >
-        Discover Clubs
-      </motion.h1>
+      <main className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+        {/* Page Title */}
+        <div className="text-center mb-16">
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-5xl md:text-6xl font-black tracking-tight mb-6"
+          >
+            <span className="text-gradient">Discover</span> Clubs
+          </motion.h1>
+          <p className="text-slate-500 text-lg md:text-xl font-medium max-w-2xl mx-auto">
+            Join the most vibrant student communities. Collaborate, learn, and grow together with like-minded peers.
+          </p>
+        </div>
 
-      {auth.authUser?.role === "admin" && (
-        <Button
-          variant="light"
-          leftSection={<IoIosAddCircle size={14} />}
-          className="p-6 space-y-6 ml-5"
-          onClick={() => navigate("createclub")}
+        {/* Action Bar (Filters & Create) */}
+        <motion.div
+          className="bg-slate-50/50 backdrop-blur-sm p-8 rounded-[2.5rem] border border-slate-200 shadow-sm mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
         >
-          Create Club
-        </Button>
-      )}
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
+            <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+              <Select
+                placeholder="Club Type"
+                value={selectedType}
+                data={typeOptions}
+                size="lg"
+                radius="xl"
+                className="flex-1 sm:flex-none sm:w-48"
+                onChange={setSelectedType}
+              />
+              
+              <Button
+                leftSection={<FiFilter size={18} />}
+                onClick={() => setShowFilters(!showFilters)}
+                size="lg"
+                radius="xl"
+                variant={showFilters ? "filled" : "light"}
+                className={showFilters ? "bg-blue-600" : "bg-blue-50 text-blue-600"}
+              >
+                Filters
+              </Button>
 
-      <div className="p-6 space-y-6">
-        <div className="flex flex-wrap justify-center items-center gap-4 text-center">
-          <Select
-            placeholder="Select club type"
-            value={selectedType}
-            data={typeOptions}
-            w={160}
-            styles={{ input: { borderRadius: "8px" } }}
-            onChange={(value) => setSelectedType(value)}
-          />
-
-          <div className="flex justify-center flex-1 min-w-[200px] overflow-x-auto whitespace-nowrap scrollbar-hide items-center">
-            <div className="flex gap-3 w-max justify-center">
-              {categories.map((cat) => (
-                <Chip
-                  key={cat}
-                  checked={selectedCategory === cat}
-                  onChange={() =>
-                    setSelectedCategory(selectedCategory === cat ? "" : cat)
-                  }
-                  variant="light"
-                  radius="md"
+              {auth.authUser?.role === "admin" && (
+                <Button
+                  variant="gradient"
+                  gradient={{ from: 'blue', to: 'cyan' }}
+                  size="lg"
+                  radius="xl"
+                  leftSection={<IoIosAddCircle size={20} />}
+                  onClick={() => navigate("createclub")}
+                  className="shadow-lg shadow-blue-500/20"
                 >
-                  {cat}
-                </Chip>
-              ))}
+                  Create Club
+                </Button>
+              )}
+            </div>
+
+            {/* Category Chips */}
+            <div className="w-full lg:flex-1 overflow-hidden">
+               <div className="flex overflow-x-auto pb-2 scrollbar-hide gap-3 justify-start lg:justify-end">
+                {categories.map((cat) => (
+                  <Chip
+                    key={cat}
+                    checked={selectedCategory === cat}
+                    onChange={() => setSelectedCategory(selectedCategory === cat ? "" : cat)}
+                    variant="filled"
+                    color="blue"
+                    radius="xl"
+                    size="md"
+                    className="flex-shrink-0"
+                  >
+                    {cat}
+                  </Chip>
+                ))}
+              </div>
             </div>
           </div>
 
-          <Button
-            leftSection={<FiFilter size={16} />}
-            onClick={() => setShowFilters(!showFilters)}
-            variant="light"
-            color="blue"
-          >
-            Filters
-          </Button>
+          {/* Expanded Filters */}
+          {showFilters && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              className="mt-8 pt-8 border-t border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
+              <div className="relative group">
+                <input
+                  type="text"
+                  value={search}
+                  placeholder="Search by club name..."
+                  className="w-full pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium"
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <FiFilter className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500" />
+              </div>
+
+              <Select
+                placeholder="Membership"
+                value={selectedMembership}
+                data={membershipOptions}
+                size="md"
+                radius="lg"
+                onChange={setSelectedMembership}
+              />
+            </motion.div>
+          )}
+        </motion.div>
+
+        {/* Clubs Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-12">
+          {clubs.length > 0 ? (
+            clubs.map((club, index) => (
+              <motion.div
+                key={club._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.05 }}
+              >
+                <ClubCard
+                  coverImg={club.coverimage}
+                  profileImg={club.logo}
+                  name={club.name}
+                  tags={club.tags}
+                  status={club.status}
+                  id={club._id}
+                  onApply={() => applyToClub(club._id)}
+                />
+              </motion.div>
+            ))
+          ) : (
+            <div className="col-span-full py-20 bg-slate-50 rounded-[3rem] text-center border border-dashed border-slate-200">
+               <h3 className="text-2xl font-bold text-slate-800 mb-2">{error || "No clubs found."}</h3>
+               <p className="text-slate-500">Try adjusting your search or filters.</p>
+            </div>
+          )}
         </div>
 
-        {showFilters && (
-          <div className="mt-4 flex flex-wrap justify-center gap-4">
-            <input
-              type="text"
-              value={search}
-              placeholder="Search by Name"
-              className="w-full md:w-80 px-4 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-              onChange={(e) => setSearch(e.target.value)}
-            />
-
-            <Select
-              placeholder="Membership"
-              value={selectedMembership}
-              data={membershipOptions}
-              w={160}
-              styles={{ input: { borderRadius: "8px" } }}
-              onChange={(value) => setSelectedMembership(value)}
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-20 flex justify-center">
+            <Pagination
+              total={totalPages}
+              value={page}
+              onChange={setPage}
+              size="lg"
+              radius="xl"
+              color="blue"
+              withEdges
             />
           </div>
         )}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mt-8">
-        {clubs.length > 0 ? (
-          clubs.map((club, index) => (
-            <ClubCard
-              key={index}
-              coverImg={club.coverimage}
-              profileImg={club.logo}
-              name={club.name}
-              tags={club.tags}
-              status={club.status}
-              id={club._id}
-              onApply={() => applyToClub(club._id)}
-            />
-          ))
-        ) : (
-          <div className="col-span-full text-center text-gray-500 mt-6">
-            {error || "No clubs found."}
-          </div>
-        )}
-      </div>
-
-      {totalPages > 1 && (
-        <Pagination
-          total={totalPages}
-          value={page}
-          onChange={(newPage) => setPage(newPage)}
-          size="md"
-          radius="lg"
-          withEdges
-          className="mt-8 flex justify-center"
-        />
-      )}
+      </main>
     </div>
   );
 };

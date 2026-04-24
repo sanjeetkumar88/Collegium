@@ -1,103 +1,97 @@
 import { FaXTwitter, FaLinkedin, FaFacebook } from "react-icons/fa6";
+import { FaArrowRight } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 const Footer = () => {
   return (
     <motion.footer
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      transition={{ duration: 1 }}
       viewport={{ once: true }}
-      className="bg-white text-gray-700 px-6 py-10 text-sm border-t border-gray-200"
+      className="bg-slate-900 text-slate-400 px-6 py-24 relative overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto flex flex-col gap-8 md:flex-row justify-between">
+      {/* Decor */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 blur-[120px] rounded-full -mr-48 -mt-48" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-cyan-600/10 blur-[120px] rounded-full -ml-48 -mb-48" />
 
-        {/* Left: Subscription */}
-        <div className="max-w-md">
-          <h4 className="text-black font-semibold mb-1">Stay in the loop</h4>
-          <p className="mb-4 text-sm">Subscribe for the latest news & updates.</p>
-          <form className="flex">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="px-4 py-2 rounded-l-md bg-gray-100 text-black outline-none border border-gray-300"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-r-md bg-black text-white font-medium hover:bg-gray-800"
-            >
-              Subscribe
-            </button>
-          </form>
-        </div>
-
-        {/* Right: Columns */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
-          {/* Site Links */}
-          <div>
-            <h4 className="text-black font-semibold mb-2">SITE</h4>
-            <ul className="space-y-1">
-              <li><a href="/" className="hover:text-black">Home</a></li>
-              <li><a href="/about" className="hover:text-black">About</a></li>
-              <li><a href="/community" className="hover:text-black">Clubs</a></li>
-              <li><a href="/events" className="hover:text-black">Events</a></li>
-              <li><a href="/project/explore-projects" className="hover:text-black">Projects</a></li>
-            </ul>
-          </div>
-
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 mb-20">
           
+          {/* Brand Column */}
+          <div className="lg:col-span-2">
+            <div className="text-2xl font-black tracking-tighter text-white mb-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/20">C</div>
+              COLLEGIUM
+            </div>
+            <p className="text-slate-500 text-lg font-medium leading-relaxed max-w-sm mb-10">
+              Empowering students through high-fidelity collaboration, resource sharing, and community engagement.
+            </p>
+            <div className="flex gap-4">
+               {[FaXTwitter, FaLinkedin, FaFacebook].map((Icon, idx) => (
+                 <a key={idx} href="#" className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-white hover:bg-blue-600 transition-all shadow-xl">
+                   <Icon size={20} />
+                 </a>
+               ))}
+            </div>
+          </div>
 
-          {/* Resources */}
+          {/* Links Columns */}
           <div>
-            <h4 className="text-black font-semibold mb-2">RESOURCES</h4>
-            <ul className="space-y-1">
-              <li><a href="/resources?type=pyq" className="hover:text-black">PYQ's</a></li>
-              <li><a href="/resources?type=lecture" className="hover:text-black">Lectures</a></li>
-              <li><a href="/resources?type=short-note" className="hover:text-black">Short Notes</a></li>
-              <li><a href="/resources?type=question-bank" className="hover:text-black">Question Bank</a></li>
-              <li><a href="/resources?type=notes" className="hover:text-black">Notes</a></li>
-              <li><a href="/resources?type=quantum" className="hover:text-black">Quantum</a></li>
+            <h4 className="text-white font-black text-xs uppercase tracking-[0.2em] mb-8">Navigation</h4>
+            <ul className="space-y-4">
+              {['Home', 'About', 'Clubs', 'Events', 'Projects'].map(item => (
+                <li key={item}>
+                  <a href={`/${item === 'Home' ? '' : item.toLowerCase()}`} className="text-sm font-black uppercase tracking-widest text-slate-500 hover:text-blue-500 transition-colors">
+                    {item}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Projects */}
           <div>
-            <h4 className="text-black font-semibold mb-2">PROJECTS</h4>
-            <ul className="space-y-1">
-              <li><a href="/project/create-project" className="hover:text-black">Create Project</a></li>
-              <li><a href="/project/find-project-partner" className="hover:text-black">Find Project Partner</a></li>
-              <li><a href="/project/explore-projects" className="hover:text-black">Explore Projects</a></li>
+            <h4 className="text-white font-black text-xs uppercase tracking-[0.2em] mb-8">Resources</h4>
+            <ul className="space-y-4">
+              {['PYQ\'s', 'Lectures', 'Short Notes', 'Question Bank', 'Notes', 'Quantum'].map(item => (
+                <li key={item}>
+                  <a href="/resources" className="text-sm font-black uppercase tracking-widest text-slate-500 hover:text-blue-500 transition-colors">
+                    {item}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
-{/* Social Links */}
-<div>
-            <h4 className="text-black font-semibold mb-2">SOCIAL</h4>
-            <ul className="space-y-1">
-              <li><a href="https://x.com/YOUR_X" className="hover:text-black" target="_blank">X (Twitter)</a></li>
-              <li><a href="https://linkedin.com/in/YOUR_LINKEDIN" className="hover:text-black" target="_blank">LinkedIn</a></li>
-              <li><a href="https://facebook.com/YOUR_FB" className="hover:text-black" target="_blank">Facebook</a></li>
-            </ul>
+          <div>
+            <h4 className="text-white font-black text-xs uppercase tracking-[0.2em] mb-8">Newsletter</h4>
+            <p className="text-slate-500 text-xs font-medium mb-6">Stay updated with the latest campus innovations.</p>
+            <form className="relative">
+              <input
+                type="email"
+                placeholder="EMAIL"
+                className="w-full bg-slate-800 border-none rounded-xl px-6 py-4 text-[10px] font-black tracking-widest text-white placeholder-slate-600 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              />
+              <button
+                type="submit"
+                className="absolute right-2 top-2 bottom-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-all"
+              >
+                <FaArrowRight size={14} />
+              </button>
+            </form>
           </div>
-
 
         </div>
-      </div>
-      
 
-      {/* Divider */}
-      <div className="border-t border-gray-200 my-8" />
-
-      {/* Bottom: Branding */}
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
-        <div className="flex items-center gap-2">
-          <div className="bg-yellow-400 text-black font-bold px-2 py-1 rounded">C</div>
-          <span>&copy; {new Date().getFullYear()} Collegium by SanjeetKumar</span>
-        </div>
-        <div className="flex gap-4 mt-4 md:mt-0 text-lg text-gray-700">
-          <a href="https://x.com/YOUR_X" target="_blank"><FaXTwitter className="hover:text-black" /></a>
-          <a href="https://linkedin.com/in/YOUR_LINKEDIN" target="_blank"><FaLinkedin className="hover:text-black" /></a>
-          <a href="https://facebook.com/YOUR_FB" target="_blank"><FaFacebook className="hover:text-black" /></a>
+        {/* Bottom Bar */}
+        <div className="pt-12 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-8">
+           <div className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">
+             &copy; {new Date().getFullYear()} COLLEGIUM PLATFORM. ALL RIGHTS RESERVED.
+           </div>
+           <div className="flex gap-8">
+              <a href="#" className="text-[10px] font-black text-slate-600 uppercase tracking-widest hover:text-white transition-colors">Privacy Policy</a>
+              <a href="#" className="text-[10px] font-black text-slate-600 uppercase tracking-widest hover:text-white transition-colors">Terms of Service</a>
+           </div>
         </div>
       </div>
     </motion.footer>

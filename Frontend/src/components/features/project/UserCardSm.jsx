@@ -1,21 +1,26 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
 function UserCardSm({ logo, name, username, role }) {
   return (
-    <div className="w-full max-w-[290px] h-[70px] bg-white rounded-2xl flex items-center justify-start shadow-md transition-transform duration-500 ease-in-out hover:cursor-pointer hover:scale-105">
-      {/* Logo */}
-      <div className="w-[50px] h-[50px] ml-[10px] rounded-[10px] bg-gray-200 flex justify-center items-center">
-        <img src={logo} alt="logo" className="w-full h-full object-cover rounded-[10px]" />
+    <motion.div 
+      whileHover={{ scale: 1.02 }}
+      className="w-full bg-white p-3 rounded-2xl flex items-center gap-4 shadow-sm border border-slate-100 hover:shadow-lg transition-all"
+    >
+      <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 shadow-sm border border-slate-50">
+        <img src={logo} alt="avatar" className="w-full h-full object-cover" />
       </div>
 
-      <div className="w-[calc(100%-90px)] ml-[10px] text-black font-poppins">
-        <div className="flex items-center justify-between">
-          <p className="text-[16px] font-bold">{name}</p>
-          <span className="text-[10px] text-gray-500">{role}</span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-black text-slate-900 truncate">{name}</p>
+          <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-widest shrink-0">
+            {role}
+          </span>
         </div>
-        <p className="text-[12px] font-light text-gray-600">@{username}</p>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">@{username}</p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

@@ -13,7 +13,7 @@ const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
       try {
         const res = await userApi.verify();
-        setAuthUser(res.data.user); 
+        setAuthUser(res.data.data.user); 
       } catch (err) { 
         setAuthUser(null);
       } finally {

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, MessageSquare, Phone, User, Shield, Crown } from "lucide-react";
 import { useClub } from "../../../context/ClubContext";
 
 export default function UserOneLineCard({
@@ -54,25 +54,24 @@ export default function UserOneLineCard({
     switch (tabContext) {
       case "applicants":
         return [
-          { label: "✅ Approve", action: "approve" },
-          { label: "❌ Reject", action: "reject" },
+          { label: "✅ Approve User", action: "approve" },
+          { label: "❌ Reject Application", action: "reject" },
         ];
       case "co-leaders":
         return [
-          { label: "👑 Make Leader", action: "makeLeader" },
-          { label: "🗑️ Remove Co-Leader", action: "removeCoLeader" },
+          { label: "👑 Promote to Leader", action: "makeLeader" },
+          { label: "🗑️ Remove Leadership", action: "removeCoLeader" },
         ];
       case "members":
         return [
           { label: "🤝 Make Co-Leader", action: "makeCoLeader" },
-          { label: "🚫 Remove", action: "remove" },
+          { label: "🚫 Remove from Club", action: "remove" },
         ];
       default:
         return [];
     }
   }, [tabContext]);
 
-  // Close menu if clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -85,74 +84,74 @@ export default function UserOneLineCard({
 
   return (
     <motion.div
-      className="flex flex-col sm:flex-row justify-between sm:items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition-all mb-4 relative gap-3 sm:gap-0 z-10"
-      initial={{ opacity: 0, y: 20 }}
+      className="flex items-center justify-between bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all group"
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
     >
-      {/* Left: Avatar + Name */}
-      <div className="flex items-center gap-4">
-        <img
-          src={user.avatar}
-          alt="avatar"
-          className="w-12 h-12 rounded-full object-cover"
-        />
-        <div>
-          <p className="font-semibold text-gray-900 dark:text-white">
-            {user.name}
-          </p>
-          <p className="text-sm text-gray-500">@{user.username}</p>
-        </div>
-      </div>
-
-      {/* Center: Contact Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-        <span>📞 {user.phone}</span>
-        <div className="flex gap-2">
-          <button className="bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-blue-200">
-            Message
-          </button>
-          <button className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-blue-600">
-            Contact
-          </button>
-        </div>
-      </div>
-
-      {/* Right: Action Dropdown */}
-      {isPrivileged && (
-        <div className="relative self-start sm:self-center" ref={dropdownRef}>
-          <button
-            onClick={() => setMenuOpen((prev) => !prev)}
-            className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition"
-          >
-            <EllipsisVertical className="w-5 h-5 text-gray-600 dark:text-white" />
-          </button>
-
-          {menuOpen && (
-            <motion.div
-              className="absolute right-0 bottom-full mb-2 w-52 origin-bottom-right bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-xl z-50 overflow-hidden"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              {actionOptions.map(({ label, action }) => (
-                <button
-                  key={action}
-                  onClick={() => handleAction(action)}
-                  className={`w-full text-left px-4 py-2 text-sm font-medium transition hover:bg-gray-100 dark:hover:bg-gray-600 ${
-                    label.toLowerCase().includes("remove") ||
-                    label.toLowerCase().includes("reject")
-                      ? "text-red-500"
-                      : "text-gray-800 dark:text-gray-100"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </motion.div>
+      {/* User Info */}
+      <div className="flex items-center gap-5">
+        <div className="relative">
+          <img
+            src={user.avatar}
+            alt="avatar"
+            className="w-14 h-14 rounded-2xl object-cover shadow-lg border-4 border-slate-50"
+          />
+          {tabContext === 'co-leaders' && (
+             <div className="absolute -top-2 -right-2 bg-indigo-500 text-white p-1 rounded-lg shadow-lg">
+                <Shield size={12} />
+             </div>
           )}
         </div>
-      )}
+        <div>
+          <h4 className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors">{user.name}</h4>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">@{user.username}</p>
+        </div>
+      </div>
+
+      {/* Actions & Contact */}
+      <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-2">
+           <button className="p-3 bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600 rounded-2xl transition-all active:scale-95">
+              <MessageSquare size={18} />
+           </button>
+           <button className="p-3 bg-slate-50 text-slate-400 hover:bg-green-50 hover:text-green-600 rounded-2xl transition-all active:scale-95">
+              <Phone size={18} />
+           </button>
+        </div>
+
+        {isPrivileged && (
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setMenuOpen((prev) => !prev)}
+              className="p-3 bg-slate-50 text-slate-400 hover:bg-slate-100 rounded-2xl transition-all active:scale-95"
+            >
+              <EllipsisVertical size={20} />
+            </button>
+
+            {menuOpen && (
+              <motion.div
+                className="absolute right-0 top-full mt-3 w-64 bg-white rounded-[1.5rem] shadow-2xl border border-slate-100 p-2 z-[100] overflow-hidden"
+                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+              >
+                {actionOptions.map(({ label, action }) => (
+                  <button
+                    key={action}
+                    onClick={() => handleAction(action)}
+                    className={`w-full text-left px-5 py-3 text-sm font-black rounded-xl transition-all ${
+                      label.includes("Remove") || label.includes("Reject")
+                        ? "text-red-500 hover:bg-red-50"
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 }
